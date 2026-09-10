@@ -1,0 +1,23 @@
+{
+  "origin": "https://github.com/hostinger/api",
+  "ref": "main",
+  "openapi": {
+    "file": "openapi.json",
+    "source": "https://raw.githubusercontent.com/hostinger/api/main/openapi.json",
+    "version": "3.0.0",
+    "infoVersion": "1.50.0",
+    "paths": 299
+  },
+  "docs": [
+    {
+      "path": "README.md",
+      "source": "https://raw.githubusercontent.com/hostinger/api/main/README.md",
+      "bytes": 1918
+    },
+    {
+      "path": "CHANGELOG.md",
+      "source": "https://raw.githubusercontent.com/hostinger/api/main/CHANGELOG.md",
+      "bytes": 0
+    }
+  ]
+}
