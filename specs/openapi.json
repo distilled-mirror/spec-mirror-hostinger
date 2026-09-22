@@ -8,7 +8,7 @@
       "url": "https://developers.hostinger.com",
       "email": "devs@hostinger.com"
     },
-    "version": "1.53.1",
+    "version": "1.54.1",
     "x-scalar-sdk-installation": [
       {
         "lang": "Shell",
@@ -792,6 +792,159 @@
           },
           "401": {
             "$ref": "#/components/responses/Common.Response.UnauthorizedResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/Common.Response.ErrorResponse"
+          }
+        }
+      }
+    },
+    "/api/agency-hosting/v1/websites/{website_uid}/domains/{domain}/ssl/reinstall": {
+      "post": {
+        "tags": [
+          "Agency Hosting: SSL"
+        ],
+        "summary": "Reinstall website SSL",
+        "description": "Replaces the Let's Encrypt certificate of the domain: the current platform certificate, when\none is recorded, is revoked and removed, then a new setup starts in the background. Returns at\nonce; `Get website SSL status` reports `installing` while it runs, then `active` or `failed`.\n\nReturns 422 for free subdomains, when a certificate process is recorded for the domain (a\nfailed setup counts until it is cleaned up), or when the domain hit its limit of three setups\nper seven days. Returns 429 when the same domain was requested less than a minute ago, and 403\nwhen the website is suspended or locked, and 404 when the website or the domain does not exist.",
+        "operationId": "agency-hosting_reinstallWebsiteSSLV1",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/website_uid"
+          },
+          {
+            "$ref": "#/components/parameters/domain"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success empty response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.SuccessEmptyResource"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Common.Response.UnauthorizedResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/Common.Response.UnprocessableContentResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/Common.Response.ErrorResponse"
+          }
+        }
+      }
+    },
+    "/api/agency-hosting/v1/websites/{website_uid}/domains/{domain}/ssl/setup": {
+      "post": {
+        "tags": [
+          "Agency Hosting: SSL"
+        ],
+        "summary": "Install website SSL",
+        "description": "Starts a Let's Encrypt certificate setup for the domain and returns at once; the setup runs in\nthe background. `Get website SSL status` reports `installing` while it runs, then `active` or\n`failed`; the `ssl_setup` entry of `List website processes` shows the same progress.\n\nReturns 422 when the domain already has a platform certificate that is not expired, when a\ncertificate process is recorded for the domain (a failed setup counts until it is cleaned up),\nor when the domain hit its limit of three setups per seven days. Returns 429 when the same\ndomain was requested less than a minute ago, 403 when the website is suspended or locked, and\n404 when the website or the domain does not exist.",
+        "operationId": "agency-hosting_installWebsiteSSLV1",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/website_uid"
+          },
+          {
+            "$ref": "#/components/parameters/domain"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success empty response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.SuccessEmptyResource"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Common.Response.UnauthorizedResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/Common.Response.UnprocessableContentResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/Common.Response.ErrorResponse"
+          }
+        }
+      }
+    },
+    "/api/agency-hosting/v1/websites/{website_uid}/domains/{domain}/ssl/status": {
+      "get": {
+        "tags": [
+          "Agency Hosting: SSL"
+        ],
+        "summary": "Get website SSL status",
+        "description": "Returns the SSL state of one domain of an Agency Plan website: the certificate `status`,\nwhether the certificate was uploaded by the customer, and when it stops being valid.\n\n`installing` means a certificate setup is running or retrying; the `ssl_setup` entry of\n`List website processes` shows the same progress. `active` means a valid certificate is in\nplace: uploaded by the customer, issued by the platform, or a lifetime certificate bought for\nthe domain. `failed` means the last setup gave up and no valid certificate is in place.\n`expired` means the certificate has run out. `not_installed` means the domain has no\ncertificate and no setup process. Returns 404 when the website or the domain does not exist.",
+        "operationId": "agency-hosting_getWebsiteSSLStatusV1",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/website_uid"
+          },
+          {
+            "$ref": "#/components/parameters/domain"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgencyHosting.V1.Ssl.SslStatusResource"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Common.Response.UnauthorizedResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/Common.Response.ErrorResponse"
+          }
+        }
+      }
+    },
+    "/api/agency-hosting/v1/websites/{website_uid}/domains/{domain}/ssl": {
+      "delete": {
+        "tags": [
+          "Agency Hosting: SSL"
+        ],
+        "summary": "Uninstall website SSL",
+        "description": "Removes the platform-issued Let's Encrypt certificate of the domain: the certificate is revoked\nand deleted before the response, so the domain is no longer served with a platform certificate\nuntil a new setup completes. Also succeeds when the domain has no platform certificate to\nremove. Uploaded (custom) certificates are not affected.\n\nReturns 422 when a certificate process is recorded for the domain (a failed setup counts until\nit is cleaned up), 429 when the same domain was requested less than a minute ago, and 403 when\nthe website is suspended or locked, and 404 when the website or the domain does not exist.",
+        "operationId": "agency-hosting_uninstallWebsiteSSLV1",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/website_uid"
+          },
+          {
+            "$ref": "#/components/parameters/domain"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success empty response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.SuccessEmptyResource"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Common.Response.UnauthorizedResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/Common.Response.UnprocessableContentResponse"
           },
           "500": {
             "$ref": "#/components/responses/Common.Response.ErrorResponse"
@@ -6159,6 +6312,55 @@
           },
           "401": {
             "$ref": "#/components/responses/Common.Response.UnauthorizedResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/Common.Response.ErrorResponse"
+          }
+        }
+      }
+    },
+    "/api/hosting/v1/accounts/{username}/websites/{domain}/databases/setup": {
+      "post": {
+        "tags": [
+          "Hosting: Databases"
+        ],
+        "summary": "Setup website database",
+        "description": "Creates a new MySQL database for the website and writes its connection details into the\nwebsite's environment variables, then restarts the application. The platform generates the\npassword (and the database name and user, unless supplied). The password is never returned;\nthe application reads it from the environment.\n\nWritten variables: `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD` and\n`DATABASE_URL` (`mysql://user:password@host:port/name`, user and password percent-encoded).\nExisting variables are kept. If the website already has any variable with one of these\nnames the call fails with 422 and nothing is created; the `Replace Node.js environment\nvariables` endpoint removes them.\n\nAfter this call the variables are ordinary environment variables: the\n`Replace Node.js environment variables` endpoint changes or removes them like any other.\n\nA restart is enough for apps that read environment variables at process start, such as\nExpress or NestJS. Frameworks that bake variables into the build output (Next.js,\n`NEXT_PUBLIC_*`) see the new values only after a fresh build (`Start Node.js build` endpoint).\n\nA password in the request is ignored; the platform always generates it. The optional `name`\nand `user` are identifiers, not secrets.",
+        "operationId": "hosting_setupWebsiteDatabaseV1",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/username_path"
+          },
+          {
+            "$ref": "#/components/parameters/domain"
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Hosting.V1.Databases.SetupDatabaseRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Hosting.V1.Databases.WebsiteDatabaseResource"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Common.Response.UnauthorizedResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/Common.Response.UnprocessableContentResponse"
           },
           "500": {
             "$ref": "#/components/responses/Common.Response.ErrorResponse"
@@ -18745,6 +18947,27 @@
         },
         "type": "object"
       },
+      "Hosting.V1.Databases.SetupDatabaseRequest": {
+        "properties": {
+          "name": {
+            "description": "Optional database name. Generated when omitted. Letters, digits and underscores;\nmust not start with an underscore. Up to 14 characters without the account username\nprefix (`u123456789_`), which is added automatically when missing. With the prefix\nthe full name is 12 to 25 characters.",
+            "type": "string",
+            "maxLength": 25,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_]*$",
+            "example": "u123456789_blog"
+          },
+          "user": {
+            "description": "Optional database user. Generated when omitted. Letters, digits and underscores;\nmust not start with an underscore. Up to 14 characters without the account username\nprefix (`u123456789_`), which is added automatically when missing. With the prefix\nthe full user is 12 to 25 characters.",
+            "type": "string",
+            "maxLength": 25,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_]*$",
+            "example": "u123456789_blog_admin"
+          }
+        },
+        "type": "object"
+      },
       "Hosting.V1.Datacenters.ListRequest": {
         "required": [
           "order_id"
@@ -21567,6 +21790,40 @@
               "completed"
             ],
             "example": "running"
+          }
+        },
+        "type": "object"
+      },
+      "AgencyHosting.V1.Ssl.SslStatusResource": {
+        "required": [
+          "status",
+          "is_custom",
+          "expires_at"
+        ],
+        "properties": {
+          "status": {
+            "description": "`installing` while a certificate setup is running or retrying, `active` when a valid\ncertificate is in place (uploaded, platform-issued, or a lifetime certificate bought for\nthe domain), `failed` when the last setup gave up and no valid certificate is in place,\n`expired` when the certificate has run out, `not_installed` when the domain has no\ncertificate and no setup process.",
+            "type": "string",
+            "enum": [
+              "not_installed",
+              "installing",
+              "failed",
+              "active",
+              "expired"
+            ],
+            "example": "active"
+          },
+          "is_custom": {
+            "description": "Whether the certificate was uploaded by the customer instead of issued or sold by the\nplatform.",
+            "type": "boolean",
+            "example": false
+          },
+          "expires_at": {
+            "description": "End of the validity period of the certificate in place; null when there is none or the\nuploaded certificate carries no expiry.",
+            "type": "string",
+            "format": "date-time",
+            "example": "2027-01-15T10:30:00Z",
+            "nullable": true
           }
         },
         "type": "object"
@@ -25373,6 +25630,64 @@
             "description": "Allowed remote host: an IPv4/IPv6 address, or \"%\" for any host.",
             "type": "string",
             "example": "192.0.2.10"
+          }
+        },
+        "type": "object"
+      },
+      "Hosting.V1.Databases.WebsiteDatabaseConnectionResource": {
+        "required": [
+          "name",
+          "user",
+          "host",
+          "port"
+        ],
+        "properties": {
+          "name": {
+            "description": "Database name, as written into DB_NAME",
+            "type": "string",
+            "example": "u123456789_aB3dE"
+          },
+          "user": {
+            "description": "Database user, as written into DB_USER",
+            "type": "string",
+            "example": "u123456789_xY9zW"
+          },
+          "host": {
+            "description": "MySQL host as written into DB_HOST. The application connects over the loopback.",
+            "type": "string",
+            "example": "localhost"
+          },
+          "port": {
+            "description": "MySQL port as written into DB_PORT",
+            "type": "integer",
+            "example": 3306
+          }
+        },
+        "type": "object"
+      },
+      "Hosting.V1.Databases.WebsiteDatabaseResource": {
+        "required": [
+          "database",
+          "env_var_keys"
+        ],
+        "properties": {
+          "database": {
+            "$ref": "#/components/schemas/Hosting.V1.Databases.WebsiteDatabaseConnectionResource"
+          },
+          "env_var_keys": {
+            "description": "Names of the environment variables written for this database. Values are never returned.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "example": [
+              "DB_HOST",
+              "DB_PORT",
+              "DB_NAME",
+              "DB_USER",
+              "DB_PASSWORD",
+              "DATABASE_URL"
+            ]
           }
         },
         "type": "object"
@@ -33341,6 +33656,12 @@
       "x-parent": "Agency Hosting"
     },
     {
+      "name": "Agency Hosting: SSL",
+      "description": "Agency Hosting: SSL",
+      "x-displayName": "SSL",
+      "x-parent": "Agency Hosting"
+    },
+    {
       "name": "Agency Hosting: Websites",
       "description": "Agency Hosting: Websites",
       "x-displayName": "Websites",
@@ -33687,6 +34008,7 @@
         "Agency Hosting: Orders",
         "Agency Hosting: PHP",
         "Agency Hosting: Website Setups",
+        "Agency Hosting: SSL",
         "Agency Hosting: Websites",
         "Agency Hosting: WordPress"
       ]
