@@ -8,7 +8,7 @@
       "url": "https://developers.hostinger.com",
       "email": "devs@hostinger.com"
     },
-    "version": "1.58.0",
+    "version": "1.58.3",
     "x-scalar-sdk-installation": [
       {
         "lang": "Shell",
@@ -7205,6 +7205,158 @@
         }
       }
     },
+    "/api/hosting/v1/accounts/{username}/websites/{domain}/git/repositories/deploy": {
+      "post": {
+        "tags": [
+          "Hosting: Git"
+        ],
+        "summary": "Deploy website Git repository",
+        "description": "Clones a Git repository into a directory of the website, or pulls it again. An empty or missing\ndirectory gets a clone of the branch. A directory that already holds this repository and branch is\nreset to its last commit and pulled: changes made on the server to files the repository tracks are\ndiscarded, files it does not track stay. A directory that holds other files, including another\nrepository or another branch of this one, is rejected. `composer install` runs after the clone or\npull when the repository has a `composer.json`.\n\nThe call waits for the deployment and returns its log. `is_success` false means Git or composer\nfailed and the log says why. A second call for the same directory is rejected while the first is\nstill waiting for the server. If the request times out, the deployment may still finish on the\nserver; calling again later with the same repository and branch pulls.\n\nPrivate repositories need an SSH URL and the account's Git SSH key from `Generate Git SSH key`,\nadded to the repository as a deploy key.",
+        "operationId": "hosting_deployWebsiteGitRepositoryV1",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/username_path"
+          },
+          {
+            "$ref": "#/components/parameters/domain"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Hosting.V1.Git.DeployWebsiteGitRepositoryRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Hosting.V1.Git.GitDeployOutputResource"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Common.Response.UnauthorizedResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/Common.Response.UnprocessableContentResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/Common.Response.ErrorResponse"
+          }
+        }
+      }
+    },
+    "/api/hosting/v1/accounts/{username}/websites/{domain}/git/repositories": {
+      "get": {
+        "tags": [
+          "Hosting: Git"
+        ],
+        "summary": "List website Git repositories",
+        "description": "Lists the Git repositories linked to directories of the website, with\n`Deploy website Git repository` or in the Git section of hPanel: clone URL, branch and directory of\neach one. A repository whose clone failed stays listed; deploying it again retries the clone. GitHub\nand GitLab auto-deployments are not listed here; see `Get Git auto-deployment settings`.",
+        "operationId": "hosting_listWebsiteGitRepositoriesV1",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/username_path"
+          },
+          {
+            "$ref": "#/components/parameters/domain"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Hosting.V1.Git.WebsiteGitRepositoryCollection"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Common.Response.UnauthorizedResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/Common.Response.ErrorResponse"
+          }
+        }
+      }
+    },
+    "/api/hosting/v1/accounts/{username}/git/ssh-key": {
+      "get": {
+        "tags": [
+          "Hosting: Git"
+        ],
+        "summary": "Get Git SSH public key",
+        "description": "Returns the public SSH key of the hosting account. `Deploy website Git repository` uses this key to\nclone and pull over SSH, so a private repository works once the key is added to it as a deploy key\non the Git host. `public_key` is null when the account has no key yet.",
+        "operationId": "hosting_getGitSSHPublicKeyV1",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/username_path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Hosting.V1.Git.GitSshKeyResource"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Common.Response.UnauthorizedResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/Common.Response.ErrorResponse"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Hosting: Git"
+        ],
+        "summary": "Generate Git SSH key",
+        "description": "Creates the SSH key pair of the hosting account and returns the public key. When the account already\nhas a key, returns that key unchanged. One key serves every website of the account; add the public\nkey to a private repository as a deploy key before deploying it.",
+        "operationId": "hosting_generateGitSSHKeyV1",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/username_path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Hosting.V1.Git.GitSshKeyResource"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Common.Response.UnauthorizedResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/Common.Response.UnprocessableContentResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/Common.Response.ErrorResponse"
+          }
+        }
+      }
+    },
     "/api/hosting/v1/accounts/{username}/websites/{domain}/nodejs/builds": {
       "get": {
         "tags": [
@@ -8004,7 +8156,7 @@
           "Hosting: Orders"
         ],
         "summary": "List orders",
-        "description": "Retrieve a paginated list of orders accessible to the authenticated client.\n\nThis endpoint returns orders of your hosting accounts as well as orders\nof other client hosting accounts that have shared access with you.\n\nUse the available query parameters to filter results by order statuses\nor specific order IDs for more targeted results.",
+        "description": "Retrieve a paginated list of orders accessible to the authenticated client.\n\nOnly Web and Cloud hosting orders are listed. Agency Plan orders are listed by\n`GET /api/agency-hosting/v1/orders`.\n\nThis endpoint returns orders of your hosting accounts as well as orders\nof other client hosting accounts that have shared access with you.\n\nUse the available query parameters to filter results by order statuses\nor specific order IDs for more targeted results.",
         "operationId": "hosting_listOrdersV1",
         "parameters": [
           {
@@ -8675,7 +8827,7 @@
           "Hosting: Websites"
         ],
         "summary": "Create website",
-        "description": "Create a new website for the authenticated client.\n\nYou must choose which hosting order to create this website on. Pass that\norder as `order_id` together with the domain name. List orders to see\navailable IDs; the website is provisioned on that order's hosting plan.\n\nThe datacenter_code parameter is required when creating the first website\non a new hosting plan - this will set up and configure new hosting account\nin the selected datacenter.\n\nSubsequent websites will be hosted on the same datacenter automatically.\n\nWebsite creation is asynchronous and takes up to a few minutes. Poll the list website\nsetups endpoint with the `domain` filter every 10 to 15 seconds and wait for `status:\ncompleted` before uploading files, deploying or creating databases. While the setup is\n`running`, endpoints that operate on the website may respond with `404` or `409`.\n`is_enabled` on the websites list reflects suspension, not readiness.",
+        "description": "Create a new website for the authenticated client.\n\nYou must choose which hosting order to create this website on. Pass that\norder as `order_id` together with the domain name. List orders to see\navailable IDs; the website is provisioned on that order's hosting plan.\n\nOnly Web and Cloud hosting orders are accepted. To create a website on an Agency\nPlan order, use `POST /api/agency-hosting/v1/orders/{order_id}/websites/setups`.\n\nThe datacenter_code parameter is required when creating the first website\non a new hosting plan - this will set up and configure new hosting account\nin the selected datacenter.\n\nSubsequent websites will be hosted on the same datacenter automatically.\n\nWebsite creation is asynchronous and takes up to a few minutes. Poll the list website\nsetups endpoint with the `domain` filter every 10 to 15 seconds and wait for `status:\ncompleted` before uploading files, deploying or creating databases. While the setup is\n`running`, endpoints that operate on the website may respond with `404` or `409`.\n`is_enabled` on the websites list reflects suspension, not readiness.",
         "operationId": "hosting_createWebsiteV1",
         "requestBody": {
           "required": true,
@@ -15574,7 +15726,7 @@
           "WordPress: Installations"
         ],
         "summary": "Install WordPress",
-        "description": "Install WordPress on an existing website.\n\nThe website must already exist before calling this endpoint. To create a new\nwebsite first, use POST /api/hosting/v1/websites and poll\nGET /api/hosting/v1/websites until it appears.\n\nCall GET /api/hosting/v1/wordpress/installations filtered by username and\ndomain before proceeding to check whether WordPress is already installed on\nthe target domain/path. If WordPress already exists and `overwrite` is false\n(the default), the async job will fail.\n\nThis operation is asynchronous: a successful response only means the install\njob has been queued, not that WordPress is ready. Installation typically\ntakes 1-2 minutes. Poll GET /api/hosting/v1/wordpress/installations filtered\nby username and domain to track progress. When the installation appears in\nthat list, WordPress is ready.",
+        "description": "Install WordPress on an existing website.\n\nThe website must already exist before calling this endpoint. To create a new\nwebsite first, use POST /api/hosting/v1/websites and poll\nGET /api/hosting/v1/websites until it appears.\n\nCall GET /api/hosting/v1/wordpress/installations filtered by username and\ndomain before proceeding to check whether WordPress is already installed on\nthe target domain/path. If WordPress already exists and `overwrite` is false\n(the default), the async job will fail.\n\nThis operation is asynchronous: a successful response only means the install\njob has been queued, not that WordPress is ready. Installation typically\ntakes 1-2 minutes. Poll GET /api/hosting/v1/wordpress/installations filtered\nby username and domain to track progress. When the installation appears in\nthat list, WordPress is ready.\n\nReturns 422 when the account already uses all the databases its plan allows,\nunless `database.name` is an existing database on the account.",
         "operationId": "hosting_installWordPressV1",
         "parameters": [
           {
@@ -19187,6 +19339,38 @@
         },
         "type": "object"
       },
+      "Hosting.V1.Git.DeployWebsiteGitRepositoryRequest": {
+        "required": [
+          "repository_url",
+          "branch"
+        ],
+        "properties": {
+          "repository_url": {
+            "description": "Clone URL of the repository on any Git host, SSH or HTTPS. Private repositories need an SSH URL\nand the account's Git SSH key added to the repository as a deploy key. An HTTP or HTTPS URL with\na username or token, or any URL with a password, is rejected.",
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 1,
+            "example": "git@github.com:octocat/my-site.git"
+          },
+          "branch": {
+            "description": "Branch to clone and pull",
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 1,
+            "pattern": "^[a-zA-Z0-9._-]([a-zA-Z0-9\\/._-]{0,253}[a-zA-Z0-9._-])?$",
+            "example": "main"
+          },
+          "directory": {
+            "description": "Directory under the website document root, exactly as `List website Git repositories` returns\nit for an existing repository. Empty, null or omitted means the document root.",
+            "type": "string",
+            "default": "",
+            "maxLength": 100,
+            "example": "my-site",
+            "nullable": true
+          }
+        },
+        "type": "object"
+      },
       "Hosting.V1.Git.UpdateGitAutoDeploymentSettingsRequest": {
         "required": [
           "installation_uuid",
@@ -21120,7 +21304,7 @@
             "type": "object"
           },
           "database": {
-            "description": "Optional. If the named database already exists, it will be used for this WordPress install. Otherwise a new database is created with a generated name and random credentials.",
+            "description": "Optional. If the named database already exists on the account, it is used for this WordPress install. Otherwise a new database is created with this name, or with a generated name when database is omitted or null. A new database gets a random database user and counts toward the plan's database limit.",
             "properties": {
               "name": {
                 "description": "Database name (username prefix added if missing)",
@@ -21128,6 +21312,7 @@
                 "example": "mydb"
               },
               "password": {
+                "description": "Password for a new database. Random when omitted or null. Ignored when the named database already exists.",
                 "type": "string",
                 "format": "password",
                 "example": "********",
@@ -21135,6 +21320,9 @@
               }
             },
             "type": "object",
+            "example": {
+              "name": "mydb"
+            },
             "nullable": true
           }
         },
@@ -26242,6 +26430,26 @@
         },
         "type": "object"
       },
+      "Hosting.V1.Git.GitDeployOutputResource": {
+        "description": "Result of cloning or pulling a Git repository into the website",
+        "required": [
+          "is_success",
+          "output"
+        ],
+        "properties": {
+          "is_success": {
+            "description": "Whether the clone or pull, and composer install when it ran, finished without errors",
+            "type": "boolean",
+            "example": true
+          },
+          "output": {
+            "description": "Log of the deployment steps, and the Git or composer error when `is_success` is false",
+            "type": "string",
+            "example": "Deployment start\nRepository cloned\nDeployment end\n"
+          }
+        },
+        "type": "object"
+      },
       "Hosting.V1.Git.GitInstallationCollection": {
         "description": "Array of [`Hosting.V1.Git.GitInstallationResource`](#model/hostingv1gitgitinstallationresource)",
         "type": "array",
@@ -26389,6 +26597,93 @@
             "description": "Default branch of the repository",
             "type": "string",
             "example": "main"
+          }
+        },
+        "type": "object"
+      },
+      "Hosting.V1.Git.GitSshKeyResource": {
+        "description": "Public SSH key the hosting account uses to clone and pull Git repositories",
+        "required": [
+          "public_key"
+        ],
+        "properties": {
+          "public_key": {
+            "description": "Public key to add as a deploy key on the Git host. Null when the account has no key yet.",
+            "type": "string",
+            "example": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC7 u123456789@example-server",
+            "nullable": true
+          }
+        },
+        "type": "object"
+      },
+      "Hosting.V1.Git.WebsiteGitRepositoryCollection": {
+        "description": "Array of [`Hosting.V1.Git.WebsiteGitRepositoryResource`](#model/hostingv1gitwebsitegitrepositoryresource)",
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/Hosting.V1.Git.WebsiteGitRepositoryResource"
+        }
+      },
+      "Hosting.V1.Git.WebsiteGitRepositoryResource": {
+        "description": "Git repository linked to a directory of the website. A repository whose clone failed stays listed;\ndeploying it again retries the clone.",
+        "required": [
+          "repository_url",
+          "branch",
+          "directory",
+          "webhook"
+        ],
+        "properties": {
+          "repository_url": {
+            "description": "Clone URL of the repository. A username, password or token in an HTTP(S) URL, or a password in any\nURL, is shown as `***`.",
+            "type": "string",
+            "example": "git@github.com:octocat/my-site.git"
+          },
+          "branch": {
+            "description": "Branch that is cloned and pulled",
+            "type": "string",
+            "example": "main"
+          },
+          "directory": {
+            "description": "Directory under the website document root. Empty means the document root.",
+            "type": "string",
+            "example": "my-site"
+          },
+          "webhook": {
+            "$ref": "#/components/schemas/Hosting.V1.Git.WebsiteGitRepositoryWebhookResource"
+          }
+        },
+        "type": "object"
+      },
+      "Hosting.V1.Git.WebsiteGitRepositoryWebhookResource": {
+        "description": "Auto-deployment webhook of the repository, the same one the Git section of hPanel shows",
+        "required": [
+          "url",
+          "provider",
+          "setup_url",
+          "tutorial_url"
+        ],
+        "properties": {
+          "url": {
+            "description": "Webhook URL to add on the Git host for automatic deployment",
+            "type": "string",
+            "example": "https://webhooks.hostinger.com/deploy/6f1ed002ab5595859014ebf0951522d9"
+          },
+          "provider": {
+            "description": "Git host detected from the repository URL. Null when it is not GitHub, GitLab or Bitbucket.",
+            "type": "string",
+            "example": "Github",
+            "nullable": true
+          },
+          "setup_url": {
+            "description": "Page on the Git host where the webhook is added. Null when the host is not detected.",
+            "type": "string",
+            "example": "https://github.com/octocat/my-site/settings/hooks/new",
+            "nullable": true
+          },
+          "tutorial_url": {
+            "description": "Git host guide for adding a webhook. Null when the host is not detected.",
+            "type": "string",
+            "example": "https://developer.github.com/webhooks/creating/",
+            "nullable": true
           }
         },
         "type": "object"
