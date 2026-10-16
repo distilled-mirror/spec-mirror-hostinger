@@ -8,7 +8,7 @@
       "url": "https://developers.hostinger.com",
       "email": "devs@hostinger.com"
     },
-    "version": "1.66.0",
+    "version": "2.0.0",
     "x-scalar-sdk-installation": [
       {
         "lang": "Shell",
@@ -1625,6 +1625,108 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/AgencyHosting.V1.WordPress.VersionCollection"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Common.Response.UnauthorizedResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/Common.Response.ErrorResponse"
+          }
+        }
+      }
+    },
+    "/api/agent-readiness/v1/checks": {
+      "get": {
+        "tags": [
+          "Agent Readiness: Checks"
+        ],
+        "summary": "List checks",
+        "description": "List every check an agent readiness scan runs, with its name, category and weight.\\n\nUse it to show the human-readable name of each `check_id` in a scan's results.",
+        "operationId": "agent-readiness_listChecksV1",
+        "responses": {
+          "200": {
+            "description": "Success response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentReadiness.V1.Checks.CheckCollection"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Common.Response.UnauthorizedResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/Common.Response.ErrorResponse"
+          }
+        }
+      }
+    },
+    "/api/agent-readiness/v1/scans": {
+      "post": {
+        "tags": [
+          "Agent Readiness: Scans"
+        ],
+        "summary": "Run agent readiness scan",
+        "description": "Start a scan of how ready a public website is for AI agents to discover, read and act on.\\n\nScanning is asynchronous: this operation only starts the scan, and the returned scan is usually `pending`\nwith no results yet. To get the results, poll the `Get agent readiness scan` operation with the same\ndomain every few seconds until its status is `completed` or `failed`. The scan itself is limited to 60 seconds,\nplus any time it waits in the queue. A `failed` scan is not retried; run this operation again.\\n\nStarting a scan for a domain that already has a pending scan from the last 5 minutes\nreturns that scan instead of starting a new one.",
+        "operationId": "agent-readiness_runAgentReadinessScanV1",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AgentReadiness.V1.Scans.RunScanRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentReadiness.V1.Scans.ScanResource"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Common.Response.UnauthorizedResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/Common.Response.UnprocessableContentResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/Common.Response.ErrorResponse"
+          }
+        }
+      }
+    },
+    "/api/agent-readiness/v1/scans/{domain}": {
+      "get": {
+        "tags": [
+          "Agent Readiness: Scans"
+        ],
+        "summary": "Get agent readiness scan",
+        "description": "Get the latest agent readiness scan of a website.\\n\nScans started with the `Run agent readiness scan` operation are asynchronous. While the status is\n`pending`, the result fields are null; wait a few seconds and call this operation again until the status is\n`completed` or `failed`. A `failed` scan is not retried; run the scan again.\\n\nA completed scan has a 0-100 score, a letter grade, a score per category, and the result of every\ncheck with the evidence found and how to fix it. Check names are listed by the `List checks` operation.\\n\nReturns 404 when the domain has never been scanned; use the `Run agent readiness scan` operation first.",
+        "operationId": "agent-readiness_getAgentReadinessScanV1",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/agent_readiness_domain_path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentReadiness.V1.Scans.ScanResource"
                 }
               }
             }
@@ -8216,7 +8318,7 @@
           "Hosting: Websites"
         ],
         "summary": "Start website setup",
-        "description": "Starts a website setup on a Web or Cloud hosting order and returns the created setup\nright away; the website itself is provisioned asynchronously. Poll the list website\nsetups endpoint with the `domain` filter every 10 to 15 seconds and wait for\n`status: completed` before uploading files, deploying or creating databases.\n\nOmit `type` for an empty website. `type: wordpress` installs WordPress in the website\nroot with the admin user, email and password from `wordpress`, the domain as the site\ntitle, and `en_US` when `wordpress.language` is omitted. The headless types\n(`headless_wordpress`, `headless_ecommerce`, `headless_pocketbase`) create a headless\nwebsite; `headless_wordpress` additionally installs WordPress into the `cms` directory\nof the website root with generated credentials.\n\nOmit `domain` to set the website up on a generated temporary free subdomain.\n\nThe order must already have a hosting account: to create the first website on a new\nhosting plan use the create website endpoint, which takes the `datacenter_code`.\nReturns 404 when the order does not exist or is not accessible to the authenticated\nclient, and 409 with a `Retry-After` header while a setup for the same domain is still\nrunning.",
+        "description": "Starts a website setup on a Web or Cloud hosting order and returns the created setup\nright away; the website itself is provisioned asynchronously. Poll the list website\nsetups endpoint with the `domain` filter every 10 to 15 seconds and wait for\n`status: completed` before uploading files, deploying or creating databases.\n\nOmit `type` for an empty website. `type: wordpress` installs WordPress in the website\nroot with the admin user, email and password from `wordpress`, the domain as the site\ntitle, and `en_US` when `wordpress.language` is omitted. The headless types\n(`headless_wordpress`, `headless_ecommerce`, `headless_pocketbase`) create a headless\nwebsite; `headless_wordpress` additionally installs WordPress into the `cms` directory\nof the website root with generated credentials.\n\nOmit `domain` to set the website up on a generated temporary free subdomain.\n\nWhen the order has no hosting account yet, the setup creates one first, in the datacenter\ngiven by `datacenter_code` or the order's default datacenter when it is omitted.\nReturns 404 when the order does not exist or is not accessible to the authenticated\nclient, and 409 with a `Retry-After` header while a setup for the same domain is still\nrunning.",
         "operationId": "hosting_startWebsiteSetupV1",
         "parameters": [
           {
@@ -8939,7 +9041,7 @@
           "Hosting: Websites"
         ],
         "summary": "Create website",
-        "description": "Create a new website for the authenticated client.\n\nYou must choose which hosting order to create this website on. Pass that\norder as `order_id` together with the domain name. List orders to see\navailable IDs; the website is provisioned on that order's hosting plan.\n\nOnly Web and Cloud hosting orders are accepted. To create a website on an Agency\nPlan order, use `POST /api/agency-hosting/v1/orders/{order_id}/websites/setups`.\n\nThe datacenter_code parameter is required when creating the first website\non a new hosting plan - this will set up and configure new hosting account\nin the selected datacenter.\n\nSubsequent websites will be hosted on the same datacenter automatically.\n\nWebsite creation is asynchronous and takes up to a few minutes. Poll the list website\nsetups endpoint with the `domain` filter every 10 to 15 seconds and wait for `status:\ncompleted` before uploading files, deploying or creating databases. While the setup is\n`running`, endpoints that operate on the website may respond with `404` or `409`.\n`is_enabled` on the websites list reflects suspension, not readiness.",
+        "description": "Deprecated: use `POST /api/hosting/v1/orders/{order_id}/onboardings` (start website setup)\ninstead. It takes the same `domain` and `datacenter_code`, can also install WordPress, and\nreturns the created setup.\n\nCreate a new website for the authenticated client.\n\nYou must choose which hosting order to create this website on. Pass that\norder as `order_id` together with the domain name. List orders to see\navailable IDs; the website is provisioned on that order's hosting plan.\n\nOnly Web and Cloud hosting orders are accepted. To create a website on an Agency\nPlan order, use `POST /api/agency-hosting/v1/orders/{order_id}/websites/setups`.\n\nWhen the order has no hosting account yet, a new hosting account is set up first, in the\ndatacenter given by `datacenter_code` or the order's default datacenter when it is omitted.\nSubsequent websites will be hosted on the same datacenter automatically.\n\nWebsite creation is asynchronous and takes up to a few minutes. Poll the list website\nsetups endpoint with the `domain` filter every 10 to 15 seconds and wait for `status:\ncompleted` before uploading files, deploying or creating databases. While the setup is\n`running`, endpoints that operate on the website may respond with `404` or `409`.\n`is_enabled` on the websites list reflects suspension, not readiness.",
         "operationId": "hosting_createWebsiteV1",
         "requestBody": {
           "required": true,
@@ -8965,13 +9067,17 @@
           "401": {
             "$ref": "#/components/responses/Common.Response.UnauthorizedResponse"
           },
+          "409": {
+            "$ref": "#/components/responses/Common.Response.ConflictResponse"
+          },
           "422": {
             "$ref": "#/components/responses/Common.Response.UnprocessableContentResponse"
           },
           "500": {
             "$ref": "#/components/responses/Common.Response.ErrorResponse"
           }
-        }
+        },
+        "deprecated": true
       }
     },
     "/api/hosting/v1/accounts/{username}/websites/{domain}/deploy": {
@@ -15862,7 +15968,7 @@
           "WordPress: AI Content"
         ],
         "summary": "Generate images",
-        "description": "Generate one or more images from a prompt and an image type for the specified\nWordPress installation. Images are returned inline as base64-encoded PNGs. They match\nthe requested aspect ratio and are never smaller than the requested size; logos are\ntransparent PNGs cropped to the mark.\n\nGeneration is synchronous and can take up to a minute. The endpoint is limited to\n10 requests per minute.\n\nProvide the WordPress installation (software) identifier in the path. It can\nbe obtained from GET /api/hosting/v1/wordpress/installations (the `id` field).",
+        "description": "Start generating one or more images from a prompt and an image type for the specified\nWordPress installation. The generation runs asynchronously: the response is returned\nright away with `status: in-progress` and a `generation_id`. Poll\nGET /api/hosting/v1/accounts/{username}/wordpress/{software}/content/generations/{generation_id}\nevery few seconds until `status` is `completed` or `failed`.\n\nA completed generation returns temporary image URLs together with the time they expire;\ndownload the images before then. Images match the requested aspect ratio and are never\nsmaller than the requested size; logos are transparent images cropped to the mark.\n\nOnly one image generation can run per installation at a time: while one is still in\nprogress the endpoint returns 409 without the ID of the running generation, so a caller\nthat did not receive the `202` has to wait for it to finish (up to a few minutes) before\nstarting a new one. The endpoint is limited to 10 requests per minute.\n\nProvide the WordPress installation (software) identifier in the path. It can\nbe obtained from GET /api/hosting/v1/wordpress/installations (the `id` field).",
         "operationId": "hosting_generateImagesV1",
         "parameters": [
           {
@@ -15883,18 +15989,72 @@
           }
         },
         "responses": {
-          "200": {
-            "description": "Success response",
+          "202": {
+            "description": "Accepted response",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/WordPress.V1.Content.GeneratedImagesResource"
+                  "$ref": "#/components/schemas/WordPress.V1.Content.GenerationResource"
                 }
               }
             }
           },
           "401": {
             "$ref": "#/components/responses/Common.Response.UnauthorizedResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/Common.Response.ErrorResponse"
+          },
+          "409": {
+            "$ref": "#/components/responses/Common.Response.ConflictResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/Common.Response.UnprocessableContentResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/Common.Response.ErrorResponse"
+          }
+        }
+      }
+    },
+    "/api/hosting/v1/accounts/{username}/wordpress/{software}/content/generations/{generation_id}": {
+      "get": {
+        "tags": [
+          "WordPress: AI Content"
+        ],
+        "summary": "Get generation result",
+        "description": "Get the result of an AI content generation started for the specified WordPress\ninstallation, such as an image generation started with\nPOST /api/hosting/v1/accounts/{username}/wordpress/{software}/content/images/generate.\n\nWhile the generation is still running only `status: in-progress` is returned; poll every\nfew seconds. Once `completed`, `result` holds the generated content shaped according to\n`type`: temporary image URLs together with the time they expire for `image-generation`, or\nthe generated website document for `website-generation` (started from the Hostinger\nWordPress plugin). A `failed` generation has no `result`. Unknown or expired generation\nIDs return 404.\n\nProvide the WordPress installation (software) identifier in the path. It can\nbe obtained from GET /api/hosting/v1/wordpress/installations (the `id` field).",
+        "operationId": "hosting_getGenerationResultV1",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/username_path"
+          },
+          {
+            "$ref": "#/components/parameters/software_path"
+          },
+          {
+            "$ref": "#/components/parameters/generation_id_path"
+          },
+          {
+            "$ref": "#/components/parameters/wordpress_generation_type"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WordPress.V1.Content.GenerationResource"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Common.Response.UnauthorizedResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/Common.Response.ErrorResponse"
           },
           "422": {
             "$ref": "#/components/responses/Common.Response.UnprocessableContentResponse"
@@ -18181,6 +18341,19 @@
             "description": "Target WordPress core version to install. Must be one of the available versions.",
             "type": "string",
             "example": "6.5.5"
+          }
+        },
+        "type": "object"
+      },
+      "AgentReadiness.V1.Scans.RunScanRequest": {
+        "required": [
+          "domain"
+        ],
+        "properties": {
+          "domain": {
+            "description": "Domain name or full URL of the website to scan. Only the host is used.",
+            "type": "string",
+            "example": "example.com"
           }
         },
         "type": "object"
@@ -20501,10 +20674,16 @@
             "nullable": true
           },
           "domain": {
-            "description": "Customer-owned domain. Cannot start with \"www.\". Omit or `null` to set the website up on a generated temporary free subdomain.",
+            "description": "Customer-owned domain. Cannot start with \"www.\" and can have at most one subdomain level, e.g. `blog.example.com`. Omit or `null` to set the website up on a generated temporary free subdomain.",
             "type": "string",
             "maxLength": 255,
             "example": "example.com",
+            "nullable": true
+          },
+          "datacenter_code": {
+            "description": "Datacenter for the hosting account when the order does not have one yet. Omit to use the order's default datacenter. Ignored when the order already has a hosting account. List available datacenters to find valid codes.",
+            "type": "string",
+            "example": "us-east-1",
             "nullable": true
           },
           "wordpress": {
@@ -20684,7 +20863,7 @@
         ],
         "properties": {
           "domain": {
-            "description": "Domain name for the website. Cannot start with \"www.\"",
+            "description": "Domain name for the website. Cannot start with \"www.\" and can have at most one subdomain level, e.g. `blog.example.com`.",
             "type": "string",
             "example": "example.com"
           },
@@ -20694,7 +20873,7 @@
             "example": 12345
           },
           "datacenter_code": {
-            "description": "Datacenter code. This parameter is required when creating the first website on a new hosting plan.",
+            "description": "Datacenter for the hosting account when the order does not have one yet. Omit to use the order's default datacenter. Ignored when the order already has a hosting account. Must be an available datacenter; list available datacenters to find valid codes.",
             "type": "string",
             "example": "us-east-1",
             "nullable": true
@@ -24098,6 +24277,266 @@
             "description": "WordPress core version.",
             "type": "string",
             "example": "6.5.5"
+          }
+        },
+        "type": "object"
+      },
+      "AgentReadiness.V1.Checks.CheckCollection": {
+        "description": "Array of [`AgentReadiness.V1.Checks.CheckResource`](#model/agentreadinessv1checkscheckresource)",
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/AgentReadiness.V1.Checks.CheckResource"
+        }
+      },
+      "AgentReadiness.V1.Checks.CheckResource": {
+        "required": [
+          "id",
+          "name",
+          "category",
+          "category_label",
+          "weight"
+        ],
+        "properties": {
+          "id": {
+            "description": "Check ID, as used by `check_id` in scan results",
+            "type": "string",
+            "example": "crawl_permission.robots_txt_valid"
+          },
+          "name": {
+            "description": "Human-readable check name",
+            "type": "string",
+            "example": "robots.txt is present and parseable"
+          },
+          "category": {
+            "description": "Category the check belongs to",
+            "type": "string",
+            "example": "crawl_permission"
+          },
+          "category_label": {
+            "description": "Human-readable category name",
+            "type": "string",
+            "example": "Crawl permission"
+          },
+          "weight": {
+            "description": "Points this check can earn",
+            "type": "integer",
+            "example": 4
+          }
+        },
+        "type": "object"
+      },
+      "AgentReadiness.V1.Scans.CategoriesResource": {
+        "required": [
+          "crawl_permission",
+          "findability",
+          "readability",
+          "structured_meaning",
+          "commercial_legibility",
+          "agent_native_content",
+          "agent_interaction"
+        ],
+        "properties": {
+          "crawl_permission": {
+            "$ref": "#/components/schemas/AgentReadiness.V1.Scans.CategoryScoreResource"
+          },
+          "findability": {
+            "$ref": "#/components/schemas/AgentReadiness.V1.Scans.CategoryScoreResource"
+          },
+          "readability": {
+            "$ref": "#/components/schemas/AgentReadiness.V1.Scans.CategoryScoreResource"
+          },
+          "structured_meaning": {
+            "$ref": "#/components/schemas/AgentReadiness.V1.Scans.CategoryScoreResource"
+          },
+          "commercial_legibility": {
+            "$ref": "#/components/schemas/AgentReadiness.V1.Scans.CategoryScoreResource"
+          },
+          "agent_native_content": {
+            "$ref": "#/components/schemas/AgentReadiness.V1.Scans.CategoryScoreResource"
+          },
+          "agent_interaction": {
+            "$ref": "#/components/schemas/AgentReadiness.V1.Scans.CategoryScoreResource"
+          }
+        },
+        "type": "object"
+      },
+      "AgentReadiness.V1.Scans.CategoryScoreResource": {
+        "required": [
+          "score",
+          "weight",
+          "earned",
+          "possible"
+        ],
+        "properties": {
+          "score": {
+            "description": "Points this category contributes to the 0-100 total score",
+            "type": "integer",
+            "example": 15
+          },
+          "weight": {
+            "description": "Maximum points this category can contribute",
+            "type": "integer",
+            "example": 20
+          },
+          "earned": {
+            "description": "Points earned by the counted checks in this category",
+            "type": "integer",
+            "example": 15
+          },
+          "possible": {
+            "description": "Points possible for the counted checks in this category",
+            "type": "integer",
+            "example": 20
+          }
+        },
+        "type": "object"
+      },
+      "AgentReadiness.V1.Scans.CheckResultResource": {
+        "required": [
+          "check_id",
+          "category",
+          "status",
+          "earned",
+          "possible",
+          "evidence",
+          "fix"
+        ],
+        "properties": {
+          "check_id": {
+            "description": "Check ID, as listed by the `List checks` operation",
+            "type": "string",
+            "example": "crawl_permission.robots_txt_valid"
+          },
+          "category": {
+            "description": "Category the check belongs to",
+            "type": "string",
+            "example": "crawl_permission"
+          },
+          "status": {
+            "description": "Check outcome. `not_applicable` and `error` checks do not count towards the category score.",
+            "type": "string",
+            "enum": [
+              "pass",
+              "partial",
+              "fail",
+              "not_applicable",
+              "error"
+            ],
+            "example": "pass"
+          },
+          "earned": {
+            "description": "Points earned by this check",
+            "type": "integer",
+            "example": 4
+          },
+          "possible": {
+            "description": "Points this check can earn",
+            "type": "integer",
+            "example": 4
+          },
+          "evidence": {
+            "description": "What the scanner observed",
+            "type": "string",
+            "example": "robots.txt returned 200 and parsed cleanly"
+          },
+          "fix": {
+            "description": "How to improve the result, or null when there is nothing to fix",
+            "type": "string",
+            "example": null,
+            "nullable": true
+          }
+        },
+        "type": "object"
+      },
+      "AgentReadiness.V1.Scans.ScanResource": {
+        "required": [
+          "domain",
+          "status",
+          "score",
+          "grade",
+          "is_unreachable",
+          "scanner_version",
+          "is_outdated",
+          "scanned_at",
+          "categories",
+          "unassessed_categories",
+          "results"
+        ],
+        "properties": {
+          "domain": {
+            "description": "Domain name that was scanned",
+            "type": "string",
+            "example": "example.com"
+          },
+          "status": {
+            "description": "Scan status. Result fields are null until the status is `completed`.",
+            "type": "string",
+            "enum": [
+              "pending",
+              "completed",
+              "failed"
+            ],
+            "example": "completed"
+          },
+          "score": {
+            "description": "Agent readiness score from 0 to 100. Null unless completed, and null when unreachable.",
+            "type": "integer",
+            "example": 78,
+            "nullable": true
+          },
+          "grade": {
+            "description": "Letter grade for the score, from `A` to `F`. Null unless completed, and null when unreachable.",
+            "type": "string",
+            "example": "B",
+            "nullable": true
+          },
+          "is_unreachable": {
+            "description": "Whether the website homepage could not be fetched",
+            "type": "boolean",
+            "example": false
+          },
+          "scanner_version": {
+            "description": "Version of the scoring method that produced this scan",
+            "type": "integer",
+            "example": 4
+          },
+          "is_outdated": {
+            "description": "Whether the scan was produced by an older scoring method than the current one",
+            "type": "boolean",
+            "example": false
+          },
+          "scanned_at": {
+            "description": "When the scan finished. Null unless completed.",
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-10-15T12:00:00Z",
+            "nullable": true
+          },
+          "categories": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/AgentReadiness.V1.Scans.CategoriesResource"
+              }
+            ],
+            "nullable": true,
+            "description": "Score breakdown per category. Null unless completed."
+          },
+          "unassessed_categories": {
+            "description": "Categories where no check could be counted. They still cost their full weight. Null unless completed.",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "example": "agent_interaction"
+            },
+            "nullable": true
+          },
+          "results": {
+            "description": "Result of every check. Null unless completed.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AgentReadiness.V1.Scans.CheckResultResource"
+            },
+            "nullable": true
           }
         },
         "type": "object"
@@ -33031,29 +33470,122 @@
         },
         "type": "object"
       },
+      "WordPress.V1.Content.GeneratedImageResource": {
+        "description": "Single image generated by the AI image generator.",
+        "required": [
+          "url",
+          "width",
+          "height",
+          "content_type"
+        ],
+        "properties": {
+          "url": {
+            "description": "Temporary URL of the generated image, valid until the `expires_at` time of the result",
+            "type": "string",
+            "example": "https://storage.googleapis.com/ai-images/hero-1.webp?X-Goog-Signature=abc123"
+          },
+          "width": {
+            "description": "Image width in pixels",
+            "type": "integer",
+            "example": 1600
+          },
+          "height": {
+            "description": "Image height in pixels",
+            "type": "integer",
+            "example": 900
+          },
+          "content_type": {
+            "description": "MIME type of the image",
+            "type": "string",
+            "example": "image/webp"
+          }
+        },
+        "type": "object"
+      },
       "WordPress.V1.Content.GeneratedImagesResource": {
         "description": "Images generated by the AI image generator.",
         "required": [
           "images",
-          "content_type"
+          "expires_at"
         ],
         "properties": {
           "images": {
-            "description": "Generated images, each encoded as a base64 string",
+            "description": "Generated images, each available at a temporary URL",
             "type": "array",
             "items": {
-              "description": "Base64-encoded image",
-              "type": "string",
-              "example": "iVBORw0KGgoAAAANSUhEUgAA..."
-            },
-            "example": [
-              "iVBORw0KGgoAAAANSUhEUgAA..."
-            ]
+              "$ref": "#/components/schemas/WordPress.V1.Content.GeneratedImageResource"
+            }
           },
-          "content_type": {
-            "description": "MIME type shared by all returned images",
+          "expires_at": {
+            "description": "Time after which the image URLs stop working. Download the images before then.",
             "type": "string",
-            "example": "image/png"
+            "format": "date-time",
+            "example": "2026-10-15T10:29:23+00:00"
+          }
+        },
+        "type": "object"
+      },
+      "WordPress.V1.Content.GenerationResource": {
+        "description": "State of an AI content generation and, once completed, its result.",
+        "required": [
+          "generation_id",
+          "type",
+          "status",
+          "result"
+        ],
+        "properties": {
+          "generation_id": {
+            "description": "Generation ID (UUID) used to poll for the result",
+            "type": "string",
+            "example": "9d4f8a1e-2b3c-4d5e-8f6a-7b8c9d0e1f2a"
+          },
+          "type": {
+            "description": "Kind of generation, determines the shape of `result`",
+            "type": "string",
+            "enum": [
+              "website-generation",
+              "image-generation"
+            ],
+            "example": "image-generation"
+          },
+          "status": {
+            "description": "`in-progress` while the generation is still running, `completed` once `result` is available, `failed` when the generation stopped without a result.",
+            "type": "string",
+            "enum": [
+              "in-progress",
+              "completed",
+              "failed"
+            ],
+            "example": "in-progress"
+          },
+          "result": {
+            "description": "Generated content, `null` until the status is `completed`. For `image-generation` it is the generated images object; for `website-generation` it is the generated website document.",
+            "nullable": true,
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/WordPress.V1.Content.GeneratedImagesResource"
+              },
+              {
+                "title": "Website generation document",
+                "type": "object",
+                "example": {
+                  "editor": "gutenberg",
+                  "single_page": false,
+                  "home_page_id": "home",
+                  "language": {
+                    "name": "en",
+                    "code": "en"
+                  },
+                  "brand": {
+                    "name": "Kava House",
+                    "tagline": "Weekly roasts from our counter"
+                  },
+                  "theme": [],
+                  "menu": [],
+                  "pages": []
+                }
+              }
+            ]
           }
         },
         "type": "object"
@@ -34087,6 +34619,16 @@
             "zpwlGlp19"
           ],
           "nullable": true
+        }
+      },
+      "agent_readiness_domain_path": {
+        "name": "domain",
+        "in": "path",
+        "description": "Domain name the scan was run for",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "example": "example.com"
         }
       },
       "category": {
@@ -35181,6 +35723,32 @@
           "example": 1268054
         }
       },
+      "generation_id_path": {
+        "name": "generation_id",
+        "in": "path",
+        "description": "Generation ID returned when the generation was started",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "format": "uuid",
+          "example": "9d4f8a1e-2b3c-4d5e-8f6a-7b8c9d0e1f2a"
+        }
+      },
+      "wordpress_generation_type": {
+        "name": "type",
+        "in": "query",
+        "description": "Generation type to look up. When omitted, every generation type is checked.",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "enum": [
+            "website-generation",
+            "image-generation"
+          ],
+          "example": "image-generation",
+          "nullable": true
+        }
+      },
       "mcp_server": {
         "name": "server",
         "in": "query",
@@ -35222,6 +35790,21 @@
     }
   ],
   "tags": [
+    {
+      "name": "Agent Readiness"
+    },
+    {
+      "name": "Agent Readiness: Scans",
+      "description": "Scan any public website for how ready it is for AI agents to\ndiscover, read and act on. A scan scores crawl permission,\nfindability, readability, structured data, commercial\nlegibility, agent-native content and agent interaction, and\nreturns a 0-100 score, a letter grade and a fix for every check.",
+      "x-displayName": "Scans",
+      "x-parent": "Agent Readiness"
+    },
+    {
+      "name": "Agent Readiness: Checks",
+      "description": "List the checks the agent readiness scanner runs, with the\ncategory and weight of each, so scan results can be shown\nwith human-readable check names.",
+      "x-displayName": "Checks",
+      "x-parent": "Agent Readiness"
+    },
     {
       "name": "Billing"
     },
@@ -35812,6 +36395,13 @@
     }
   ],
   "x-tagGroups": [
+    {
+      "name": "Agent Readiness",
+      "tags": [
+        "Agent Readiness: Scans",
+        "Agent Readiness: Checks"
+      ]
+    },
     {
       "name": "Billing",
       "tags": [
