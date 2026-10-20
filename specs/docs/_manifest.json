@@ -5,8 +5,8 @@
     "file": "openapi.json",
     "source": "https://raw.githubusercontent.com/hostinger/api/main/openapi.json",
     "version": "3.0.0",
-    "infoVersion": "2.1.0",
-    "paths": 325
+    "infoVersion": "2.1.2",
+    "paths": 329
   },
   "docs": [
     {
