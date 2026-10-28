@@ -8,7 +8,7 @@
       "url": "https://developers.hostinger.com",
       "email": "devs@hostinger.com"
     },
-    "version": "2.3.0",
+    "version": "2.4.3",
     "x-scalar-sdk-installation": [
       {
         "lang": "Shell",
@@ -3390,7 +3390,7 @@
           "Domains: Portfolio"
         ],
         "summary": "Complete domain setup",
-        "description": "Register a domain you have already paid for but which has not been set up yet.\n\nUse this endpoint when an order completed without registering the domain, for example when\n`Purchase new domain` returned `202 Accepted` and the domain was added to your account without\nbeing registered, or when an earlier setup attempt failed. No new order is placed and no payment\nis taken: the subscription you already own is used, for the period you already paid for.\n\nA domain is left awaiting setup when the details needed to register it were missing or invalid\nas the order completed. Domains ordered elsewhere can be awaiting setup for the same reason.\nComplete the missing information, then call this endpoint. If the order itself has not completed\nyet, the domain is not on your account, wait until it appears in `Get domain list`.\n\nIf `domain_contacts` is omitted, the default WHOIS profile of that TLD is used for all four\nroles. The profile must exist and be complete for the TLD, an incomplete profile is the most\ncommon reason a domain is left awaiting setup. Create one with `Create WHOIS profile`.\n\nSome TLDs require `additional_details`. These are validated before setup, so a missing or\ninvalid value is rejected without any registration being attempted.\n\nThe domain is set up with the default nameservers and without privacy protection. Use\n`Update domain nameservers` and `Enable privacy protection` afterwards to change either.\n\nA successful response means the setup request was accepted, not that the domain is already\nregistered. Poll `Get domain list` for the outcome, the domain appears in `Get domain details`\nonly once it is registered.\n\nUse this endpoint to finish registering a domain that is awaiting setup on your account.",
+        "description": "Register a domain you have already paid for but which has not been set up yet.\n\nUse this endpoint when an order completed without registering the domain, for example when\n`Purchase new domain` returned `202 Accepted` and the domain was added to your account without\nbeing registered, or when an earlier setup attempt failed. No new order is placed and no payment\nis taken: the subscription you already own is used, for the period you already paid for.\n\nA domain is left awaiting setup when the details needed to register it were missing or invalid\nas the order completed. Domains ordered elsewhere can be awaiting setup for the same reason.\nComplete the missing information, then call this endpoint. If the order itself has not completed\nyet, the domain is not on your account, wait until it appears in `Get domain list`.\n\nIf `domain_contacts` is omitted, the default WHOIS profile of that TLD is used for all four\nroles. The profile must exist and be complete for the TLD, an incomplete profile is the most\ncommon reason a domain is left awaiting setup. Create one with `Create WHOIS profile`.\n\nSome TLDs require `additional_details`. These are validated before setup, so a missing or\ninvalid value is rejected without any registration being attempted.\n\nThe domain is set up with the default nameservers and with privacy protection. Use\n`Update domain nameservers` and `Disable privacy protection` afterwards to change either.\n\nA successful response means the setup request was accepted, not that the domain is already\nregistered. Poll `Get domain list` for the outcome, the domain appears in `Get domain details`\nonly once it is registered.\n\nUse this endpoint to finish registering a domain that is awaiting setup on your account.",
         "operationId": "domains_completeDomainSetupV1",
         "parameters": [
           {
@@ -5868,13 +5868,49 @@
         }
       }
     },
+    "/api/hosting/v1/accounts/{username}/websites/{domain}/cache/status": {
+      "get": {
+        "tags": [
+          "Hosting: Cache"
+        ],
+        "summary": "Get cache status",
+        "description": "Returns the caching state of the website: whether server-side caching is enabled and whether\ndevelopment (cacheless) mode is on. Works for the main domain, addon websites, parked domains\nand subdomains of the account; each reports its own settings and does not inherit them from\nits parent website.\n\n`is_enabled` is the setting changed by `Toggle website cache` and reflects a toggle\nimmediately. `is_cacheless_mode_enabled` is true while development mode is on; caching is then\nbypassed even when `is_enabled` is true. `Toggle cacheless mode` is applied in the background,\nso this flag can take a few minutes to follow it.\n\nThe domain must be the exact website name as listed on the account, without a `www.` prefix.\nReturns 404 when the domain is not a website on the account.",
+        "operationId": "hosting_getCacheStatusV1",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/username_path"
+          },
+          {
+            "$ref": "#/components/parameters/domain"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Hosting.V1.Cache.CacheStatusResource"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Common.Response.UnauthorizedResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/Common.Response.ErrorResponse"
+          }
+        }
+      }
+    },
     "/api/hosting/v1/accounts/{username}/websites/{domain}/cacheless-mode/toggle": {
       "patch": {
         "tags": [
           "Hosting: Cache"
         ],
         "summary": "Toggle cacheless mode",
-        "description": "Turns development (cacheless) mode on or off, based on the enabled flag. When enabled, nothing\nis cached, effectively turning off all caching for the website; use it while actively developing,\ntesting changes, debugging issues, or when real-time updates must be visible. Disable it after\nfinishing development work to restore the performance benefits of caching.",
+        "description": "Turns development (cacheless) mode on or off, based on the enabled flag. When enabled, nothing\nis cached, effectively turning off all caching for the website; use it while actively developing,\ntesting changes, debugging issues, or when real-time updates must be visible. Disable it after\nfinishing development work to restore the performance benefits of caching.\n\nThe change is applied in the background and can take a few minutes. Use `Get cache status` to\ncheck the current state.",
         "operationId": "hosting_toggleCachelessModeV1",
         "parameters": [
           {
@@ -5923,7 +5959,7 @@
           "Hosting: Cache"
         ],
         "summary": "Toggle website cache",
-        "description": "Turns server-side caching for the website on or off, based on the enabled flag. Enable it for\nfaster page loads, reduced server load, and improved user experience; recommended for production\nwebsites. Disabling may impact performance; to temporarily bypass caching while developing or\ndebugging, prefer toggling cacheless mode instead.\n\nDoes nothing if caching is already in the requested state.",
+        "description": "Turns server-side caching for the website on or off, based on the enabled flag. Enable it for\nfaster page loads, reduced server load, and improved user experience; recommended for production\nwebsites. Disabling may impact performance; to temporarily bypass caching while developing or\ndebugging, prefer toggling cacheless mode instead.\n\nDoes nothing if caching is already in the requested state. Use `Get cache status` to check the\ncurrent state.",
         "operationId": "hosting_toggleWebsiteCacheV1",
         "parameters": [
           {
@@ -11458,7 +11494,7 @@
           "Reach: Campaigns"
         ],
         "summary": "Get campaign details",
-        "description": "Get a single campaign with its sender, subject, template reference, targeting and delivery\nprogress.\n\nThis describes how the campaign was set up and how far it has got. For opens, clicks and\nunsubscribes use the campaign statistics endpoint.",
+        "description": "Get a single campaign with its sender, subject, template reference, targeting and delivery\nprogress.\n\nThis describes how the campaign was set up and how far it has got. For opens, clicks and\nunsubscribes use the campaign statistics endpoint. The email content is not included: pass\n`template_uuid` to the get email template endpoint to read its HTML.",
         "operationId": "reach_getCampaignDetailsV1",
         "parameters": [
           {
@@ -13804,13 +13840,82 @@
         }
       }
     },
+    "/api/reach/v1/profiles/{profileUuid}/ecommerce/stores/{storeId}": {
+      "delete": {
+        "tags": [
+          "Reach: Integrations"
+        ],
+        "summary": "Disconnect Ecommerce store",
+        "description": "Disconnect an eCommerce store from the profile.\n\nReach stops receiving the store's customers and orders, and its products and coupons are\nremoved from Reach; contacts and past orders stay. Take `store_id` from the list eCommerce\nstores endpoint; for a store that is `connected_to_other_profile`, call this with that\nprofile. Also succeeds when the store is not connected to this profile, so success is not\nproof that anything was disconnected. Confirm the store and the plan with the customer\nbefore calling.",
+        "operationId": "reach_disconnectEcommerceStoreV1",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/profileUuid"
+          },
+          {
+            "$ref": "#/components/parameters/storeId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success empty response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.SuccessEmptyResource"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Common.Response.UnauthorizedResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/Common.Response.ErrorResponse"
+          }
+        }
+      }
+    },
+    "/api/reach/v1/profiles/{profileUuid}/ecommerce/stores": {
+      "get": {
+        "tags": [
+          "Reach: Integrations"
+        ],
+        "summary": "List Ecommerce stores",
+        "description": "Get all of the customer's Hostinger eCommerce stores, each with its `store_id` and\n`connection_status` for the profile in the path.\n\nA store is connected to at most one profile. `connected_to_other_profile` does not name that\nprofile - call this for each profile to find it. The list is empty, not an error, when the\neCommerce service cannot be reached. Pass `store_id` to the disconnect eCommerce store\nendpoint. Connecting an AI Website Builder site connects the store selling on it.",
+        "operationId": "reach_listEcommerceStoresV1",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/profileUuid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Reach.V1.Stores.StoreCollection"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Common.Response.UnauthorizedResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/Common.Response.ErrorResponse"
+          }
+        }
+      }
+    },
     "/api/reach/v1/profiles/{profileUuid}/templates": {
       "get": {
         "tags": [
           "Reach: Templates"
         ],
         "summary": "List email templates",
-        "description": "Get a list of the email templates in a profile, most recently updated first.\n\nTemplates are the reusable email bodies a campaign is built from. The list is not paginated\nand only the metadata is returned - the template content itself is not exposed. Use the\n`uuid` of a template as the `template_uuid` when creating a campaign.",
+        "description": "Get a list of the email templates in a profile, most recently updated first.\n\nTemplates are the reusable email bodies a campaign is built from. The list is not paginated\nand only the metadata is returned, without the HTML content. Use the `uuid` of a template\nas the `template_uuid` when creating a campaign. To read one template's HTML use the get\nemail template endpoint, and only when the content itself is needed.",
         "operationId": "reach_listEmailTemplatesV1",
         "parameters": [
           {
@@ -13865,6 +13970,211 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Reach.V1.Templates.TemplateResource"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Common.Response.UnauthorizedResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/Common.Response.UnprocessableContentResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/Common.Response.ErrorResponse"
+          }
+        }
+      }
+    },
+    "/api/reach/v1/profiles/{profileUuid}/templates/{templateUuid}": {
+      "get": {
+        "tags": [
+          "Reach: Templates"
+        ],
+        "summary": "Get email template",
+        "description": "Get one email template of the profile with its full HTML in `template_content`.\n\nA campaign's email content is its template: to read what a campaign sends, get the campaign\nand pass its `template_uuid` here. The HTML can be large, so fetch it only when the content\nitself is needed, never to browse or pick templates - the list email templates endpoint does\nthat without content. Personalization tags such as `{{name}}` come back unrendered.",
+        "operationId": "reach_getEmailTemplateV1",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/profileUuid"
+          },
+          {
+            "$ref": "#/components/parameters/templateUuid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Reach.V1.Templates.TemplateDetailsResource"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Common.Response.UnauthorizedResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/Common.Response.ErrorResponse"
+          }
+        }
+      }
+    },
+    "/api/reach/v1/profiles/{profileUuid}/websites": {
+      "get": {
+        "tags": [
+          "Reach: Integrations"
+        ],
+        "summary": "List connected websites",
+        "description": "Get the websites connected to the profile, each with its `domain` and `platform_type`.\n\nA domain is connected to at most one profile, so to find which plan a site is on, call this\nfor each profile. Only connected sites are listed, not every website the customer owns, and\neCommerce stores are not included - use the list eCommerce stores endpoint for those. Pass\n`domain` to the disconnect WordPress site or disconnect AI Website Builder site endpoint.",
+        "operationId": "reach_listConnectedWebsitesV1",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/profileUuid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Reach.V1.Websites.WebsiteCollection"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Common.Response.UnauthorizedResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/Common.Response.ErrorResponse"
+          }
+        }
+      }
+    },
+    "/api/reach/v1/profiles/{profileUuid}/websites/website-builder": {
+      "post": {
+        "tags": [
+          "Reach: Integrations"
+        ],
+        "summary": "Connect AI Website Builder site",
+        "description": "Connect an AI Website Builder site the customer built manually to the profile, so its\nsubscribers flow into Reach.\n\nFails with not found when the customer owns no AI Website Builder site with that domain.\nFails with `DOMAIN_ALREADY_EXISTS` when the domain is connected to any profile - to move a\nsite to another plan, disconnect it from the old profile first - and with\n`WEBSITE_CONNECTION_ALREADY_EXISTS` when this profile already has an AI Website Builder site.\nThe eCommerce store selling on the site, if it is not connected anywhere, is connected too.\nWordPress sites and sites made with the agentic AI Website Builder cannot be connected here.",
+        "operationId": "reach_connectAIWebsiteBuilderSiteV1",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/profileUuid"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Reach.V1.Websites.WebsiteBuilder.ConnectRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success empty response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.SuccessEmptyResource"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Common.Response.UnauthorizedResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/Common.Response.UnprocessableContentResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/Common.Response.ErrorResponse"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Reach: Integrations"
+        ],
+        "summary": "Disconnect AI Website Builder site",
+        "description": "Disconnect an AI Website Builder site from the profile; the site stops sending subscribers\nto Reach.\n\nTake `domain` from the list connected websites endpoint. Works for a site that was already\ndeleted in the builder. Fails with not found when the domain is not connected to this\nprofile. Contacts and any connected eCommerce store stay. The site stays disconnected until\nit is connected again, so confirm the site and the plan with the customer before calling.",
+        "operationId": "reach_disconnectAIWebsiteBuilderSiteV1",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/profileUuid"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Reach.V1.Websites.WebsiteBuilder.DisconnectRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success empty response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.SuccessEmptyResource"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Common.Response.UnauthorizedResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/Common.Response.UnprocessableContentResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/Common.Response.ErrorResponse"
+          }
+        }
+      }
+    },
+    "/api/reach/v1/profiles/{profileUuid}/websites/wordpress": {
+      "delete": {
+        "tags": [
+          "Reach: Integrations"
+        ],
+        "summary": "Disconnect WordPress site",
+        "description": "Disconnect a WordPress site from the profile.\n\nThe Reach plugin on the site stops sending subscribers and store data, and the site's\nproducts and coupons are removed from Reach; contacts and past orders stay. Take `domain`\nfrom the list connected websites endpoint. Fails with not found when the domain is not\nconnected to this profile. This cannot be undone through the API - the customer reconnects\nfrom the WordPress plugin - so confirm the site and the plan with the customer before calling.",
+        "operationId": "reach_disconnectWordPressSiteV1",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/profileUuid"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Reach.V1.Websites.WordPress.DisconnectRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success empty response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.SuccessEmptyResource"
                 }
               }
             }
@@ -21571,6 +21881,51 @@
         },
         "type": "object"
       },
+      "Hosting.V1.Websites.TriggerEventRequest": {
+        "required": [
+          "event"
+        ],
+        "properties": {
+          "event": {
+            "description": "Event to trigger; `name` decides which `params` it takes",
+            "required": [
+              "name",
+              "params"
+            ],
+            "properties": {
+              "name": {
+                "description": "Name of the event:\n- `headless_onboarding.tool.connected`: an AI coding tool started building this website\n  with the Hostinger headless skill. Takes `params.tool`.",
+                "type": "string",
+                "enum": [
+                  "headless_onboarding.tool.connected"
+                ],
+                "example": "headless_onboarding.tool.connected"
+              },
+              "params": {
+                "description": "Fields of the event",
+                "required": [
+                  "tool"
+                ],
+                "properties": {
+                  "tool": {
+                    "description": "Lowercase slug of the AI coding tool. Known slugs: `claude` (Claude Code),\n`cursor` (Cursor), `codex` (Codex), `vscode` (VS Code), `antigravity` (Antigravity)\nand `devin` (Devin). For any other tool, send its own slug.",
+                    "type": "string",
+                    "maxLength": 32,
+                    "minLength": 1,
+                    "pattern": "^[a-z0-9-]+$",
+                    "example": "claude"
+                  }
+                },
+                "type": "object",
+                "additionalProperties": false
+              }
+            },
+            "type": "object",
+            "additionalProperties": false
+          }
+        },
+        "type": "object"
+      },
       "Reach.V1.Campaigns.StoreRequest": {
         "description": "Create a campaign in draft status",
         "required": [
@@ -22629,6 +22984,48 @@
             "maxLength": 255,
             "example": "Summer Sale Draft",
             "nullable": true
+          }
+        },
+        "type": "object"
+      },
+      "Reach.V1.Websites.WebsiteBuilder.ConnectRequest": {
+        "description": "AI Website Builder site to connect to the profile",
+        "required": [
+          "domain"
+        ],
+        "properties": {
+          "domain": {
+            "type": "string",
+            "maxLength": 255,
+            "example": "example.com"
+          }
+        },
+        "type": "object"
+      },
+      "Reach.V1.Websites.WebsiteBuilder.DisconnectRequest": {
+        "description": "AI Website Builder site to disconnect from the profile",
+        "required": [
+          "domain"
+        ],
+        "properties": {
+          "domain": {
+            "type": "string",
+            "maxLength": 255,
+            "example": "example.com"
+          }
+        },
+        "type": "object"
+      },
+      "Reach.V1.Websites.WordPress.DisconnectRequest": {
+        "description": "WordPress site to disconnect from the profile",
+        "required": [
+          "domain"
+        ],
+        "properties": {
+          "domain": {
+            "type": "string",
+            "maxLength": 255,
+            "example": "example.com"
           }
         },
         "type": "object"
@@ -28139,6 +28536,25 @@
         },
         "type": "object"
       },
+      "Hosting.V1.Cache.CacheStatusResource": {
+        "required": [
+          "is_enabled",
+          "is_cacheless_mode_enabled"
+        ],
+        "properties": {
+          "is_enabled": {
+            "description": "Whether server-side caching is enabled for the website",
+            "type": "boolean",
+            "example": true
+          },
+          "is_cacheless_mode_enabled": {
+            "description": "Whether development (cacheless) mode is on. While it is on, caching is bypassed even when\n`is_enabled` is true. Can take a few minutes to follow a cacheless mode toggle.",
+            "type": "boolean",
+            "example": false
+          }
+        },
+        "type": "object"
+      },
       "Hosting.V1.Cdn.CdnStatusResource": {
         "required": [
           "is_enabled"
@@ -33262,12 +33678,124 @@
         },
         "type": "object"
       },
+      "Reach.V1.Stores.StoreCollection": {
+        "description": "Array of [`Reach.V1.Stores.StoreResource`](#model/reachv1storesstoreresource)",
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/Reach.V1.Stores.StoreResource"
+        }
+      },
+      "Reach.V1.Stores.StoreResource": {
+        "properties": {
+          "store_id": {
+            "description": "Pass this to the disconnect eCommerce store endpoint.",
+            "type": "string",
+            "example": "ec_123"
+          },
+          "business_name": {
+            "type": "string",
+            "example": "Bright Panda",
+            "nullable": true
+          },
+          "domain": {
+            "type": "string",
+            "example": "store.example.com",
+            "nullable": true
+          },
+          "logo_url": {
+            "type": "string",
+            "example": "https://cdn.example.com/logo.png",
+            "nullable": true
+          },
+          "version": {
+            "type": "string",
+            "enum": [
+              "v2_standalone"
+            ],
+            "example": "v2_standalone",
+            "nullable": true
+          },
+          "sales_channels": {
+            "description": "Storefronts of the store.",
+            "type": "array",
+            "items": {
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "example": "scha_01JXK3MA1B2C3D4E5F6G7H8J9K"
+                },
+                "name": {
+                  "type": "string",
+                  "example": "Online store",
+                  "nullable": true
+                },
+                "type": {
+                  "type": "string",
+                  "example": "builder",
+                  "nullable": true
+                },
+                "domain": {
+                  "type": "string",
+                  "example": "shop.example.com",
+                  "nullable": true
+                }
+              },
+              "type": "object"
+            }
+          },
+          "connection_status": {
+            "description": "`connected` to the profile in the path, `connected_to_other_profile` when another profile of the account holds it, or `not_connected`.",
+            "type": "string",
+            "enum": [
+              "connected",
+              "connected_to_other_profile",
+              "not_connected"
+            ],
+            "example": "connected"
+          }
+        },
+        "type": "object"
+      },
       "Reach.V1.Templates.TemplateCollection": {
         "description": "Array of [`Reach.V1.Templates.TemplateResource`](#model/reachv1templatestemplateresource)",
         "type": "array",
         "items": {
           "$ref": "#/components/schemas/Reach.V1.Templates.TemplateResource"
         }
+      },
+      "Reach.V1.Templates.TemplateDetailsResource": {
+        "properties": {
+          "uuid": {
+            "description": "Pass this as the `template_uuid` of a campaign.",
+            "type": "string",
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          },
+          "title": {
+            "description": "Null for templates that were never named.",
+            "type": "string",
+            "example": "Newsletter Template",
+            "nullable": true
+          },
+          "template_content": {
+            "description": "Full HTML of the template, with personalization tags such as `{{name}}` unrendered. Null when the stored HTML cannot be read.",
+            "type": "string",
+            "example": "<html><body><h1>Hello {{name}}</h1></body></html>",
+            "nullable": true
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2025-02-27T11:54:22Z",
+            "nullable": true
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2025-03-04T09:12:07Z",
+            "nullable": true
+          }
+        },
+        "type": "object"
       },
       "Reach.V1.Templates.TemplateResource": {
         "properties": {
@@ -33294,6 +33822,33 @@
             "format": "date-time",
             "example": "2025-03-04T09:12:07Z",
             "nullable": true
+          }
+        },
+        "type": "object"
+      },
+      "Reach.V1.Websites.WebsiteCollection": {
+        "description": "Array of [`Reach.V1.Websites.WebsiteResource`](#model/reachv1websiteswebsiteresource)",
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/Reach.V1.Websites.WebsiteResource"
+        }
+      },
+      "Reach.V1.Websites.WebsiteResource": {
+        "properties": {
+          "domain": {
+            "description": "Pass this to the disconnect endpoint matching `platform_type`.",
+            "type": "string",
+            "example": "example.com"
+          },
+          "platform_type": {
+            "description": "`wordpress`, `website_builder` (AI Website Builder site built manually) or `horizons` (site built with the agentic AI Website Builder).",
+            "type": "string",
+            "enum": [
+              "wordpress",
+              "website_builder",
+              "horizons"
+            ],
+            "example": "website_builder"
           }
         },
         "type": "object"
@@ -36447,6 +37002,17 @@
           "example": "550e8400-e09b-41d4-a716-400055000000"
         }
       },
+      "storeId": {
+        "name": "storeId",
+        "in": "path",
+        "description": "Hostinger eCommerce store ID, as returned by the eCommerce stores list",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "maxLength": 255,
+          "example": "ec_123"
+        }
+      },
       "subscription_status": {
         "name": "subscription_status",
         "in": "query",
@@ -36482,6 +37048,16 @@
         "schema": {
           "type": "string",
           "format": "uuid",
+          "example": "550e8400-e29b-41d4-a716-446655440000"
+        }
+      },
+      "templateUuid": {
+        "name": "templateUuid",
+        "in": "path",
+        "description": "Template uuid parameter",
+        "required": true,
+        "schema": {
+          "type": "string",
           "example": "550e8400-e29b-41d4-a716-446655440000"
         }
       },
@@ -37130,6 +37706,12 @@
       "x-parent": "Reach"
     },
     {
+      "name": "Reach: Integrations",
+      "description": "Reach: Integrations",
+      "x-displayName": "Integrations",
+      "x-parent": "Reach"
+    },
+    {
       "name": "VPS"
     },
     {
@@ -37399,7 +37981,8 @@
         "Reach: Campaigns",
         "Reach: Templates",
         "Reach: Forms",
-        "Reach: Profiles"
+        "Reach: Profiles",
+        "Reach: Integrations"
       ]
     },
     {
