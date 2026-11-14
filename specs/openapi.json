@@ -8,7 +8,7 @@
       "url": "https://developers.hostinger.com",
       "email": "devs@hostinger.com"
     },
-    "version": "2.14.1",
+    "version": "3.0.0",
     "x-scalar-sdk-installation": [
       {
         "lang": "Shell",
@@ -5597,19 +5597,309 @@
         }
       }
     },
+    "/api/gpu/v1/instances/{instanceId}": {
+      "get": {
+        "tags": [
+          "GPU: Instances"
+        ],
+        "summary": "Get instance details",
+        "description": "Retrieve detailed information about a specified GPU instance, including its SSH keys.\n\nUse this endpoint to follow the instance `status` after creating or deleting it.",
+        "operationId": "GPU_getInstanceDetailsV1",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/instanceId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GPU.V1.Instance.InstanceResource"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Common.Response.UnauthorizedResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/Common.Response.ErrorResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/Common.Response.ErrorResponse"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "GPU: Instances"
+        ],
+        "summary": "Delete instance",
+        "description": "Delete a specified GPU instance.\n\nThe instance is destroyed asynchronously: a successful request returns immediately and the instance\n`status` moves to `destroying`. Deleting fails while the instance is in `created`, `destroying`,\n`destroyed` or `abuse` status, or while another action is in progress on it.\n\nUse this endpoint to stop billing for a GPU instance you no longer need.",
+        "operationId": "GPU_deleteInstanceV1",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/instanceId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success empty response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.SuccessEmptyResource"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Common.Response.UnauthorizedResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/Common.Response.ErrorResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/Common.Response.ErrorResponse"
+          }
+        }
+      }
+    },
+    "/api/gpu/v1/instances/{instanceId}/exposed-services/{exposedServiceId}": {
+      "delete": {
+        "tags": [
+          "GPU: Exposed services"
+        ],
+        "summary": "Delete exposed service",
+        "description": "Delete a specified exposed service of a GPU instance.\n\nThe service is removed asynchronously: a successful request returns immediately and the service\nstops being reachable from the internet shortly after.\n\nUse this endpoint to close public access to a service on your GPU instance.",
+        "operationId": "GPU_deleteExposedServiceV1",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/instanceId"
+          },
+          {
+            "$ref": "#/components/parameters/exposedServiceId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success empty response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.SuccessEmptyResource"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Common.Response.UnauthorizedResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/Common.Response.ErrorResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/Common.Response.ErrorResponse"
+          }
+        }
+      }
+    },
+    "/api/gpu/v1/instances/{instanceId}/exposed-services": {
+      "get": {
+        "tags": [
+          "GPU: Exposed services"
+        ],
+        "summary": "Get exposed services",
+        "description": "Retrieve the services exposed on a specified GPU instance.\n\nA newly created service is listed once it gets its public hostname and external port.\n\nUse this endpoint to find the public address of services running on your GPU instance.",
+        "operationId": "GPU_getExposedServicesV1",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/instanceId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GPU.V1.ExposedService.ExposedServiceCollection"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Common.Response.UnauthorizedResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/Common.Response.ErrorResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/Common.Response.ErrorResponse"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "GPU: Exposed services"
+        ],
+        "summary": "Create exposed service",
+        "description": "Expose a service running on a specified GPU instance to the internet.\n\nThe service is exposed asynchronously: a successful request returns immediately, and the service\nappears in the exposed services list once it gets its public hostname and external port.\nFails when the instance already has the maximum of 4 exposed services.\n\nUse this endpoint to make an application on your GPU instance publicly reachable.",
+        "operationId": "GPU_createExposedServiceV1",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/instanceId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GPU.V1.ExposedService.StoreRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success empty response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.SuccessEmptyResource"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Common.Response.UnauthorizedResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/Common.Response.ErrorResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/Common.Response.UnprocessableContentResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/Common.Response.ErrorResponse"
+          }
+        }
+      }
+    },
+    "/api/gpu/v1/instances": {
+      "get": {
+        "tags": [
+          "GPU: Instances"
+        ],
+        "summary": "Get instances",
+        "description": "Retrieve all GPU instances of your account.\n\nUse this endpoint to view your GPU instances with their status, pool, instance type and OS template.",
+        "operationId": "GPU_getInstancesV1",
+        "responses": {
+          "200": {
+            "description": "Success response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GPU.V1.Instance.InstanceListCollection"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Common.Response.UnauthorizedResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/Common.Response.ErrorResponse"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "GPU: Instances"
+        ],
+        "summary": "Create instance",
+        "description": "Create a new GPU instance.\n\nPick `pool_instance_id` from the pool instance types list and `os_template_id` from the OS templates\navailable for that instance type. Your account must have enough credits to run the instance for its\nfirst hour.\n\nThe instance is created asynchronously: a successful request returns immediately, and the instance\nappears in the instance list while its `status` moves from `created` through `creating` to `running`.\n\nUse this endpoint to provision GPU compute.",
+        "operationId": "GPU_createInstanceV1",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GPU.V1.Instance.StoreRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success empty response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.SuccessEmptyResource"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Common.Response.UnauthorizedResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/Common.Response.UnprocessableContentResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/Common.Response.ErrorResponse"
+          }
+        }
+      }
+    },
+    "/api/gpu/v1/instances/{instanceId}/metrics": {
+      "get": {
+        "tags": [
+          "GPU: Instances"
+        ],
+        "summary": "Get instance metrics",
+        "description": "Retrieve utilisation metrics of a specified GPU instance for the last hour.\n\nEach data point contains CPU, memory and GPU utilisation, used GPU memory and GPU throughput.\nThe list is empty until the instance is provisioned.\n\nUse this endpoint to monitor GPU instance load.",
+        "operationId": "GPU_getInstanceMetricsV1",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/instanceId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GPU.V1.Metrics.MetricsCollection"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Common.Response.UnauthorizedResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/Common.Response.ErrorResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/Common.Response.ErrorResponse"
+          }
+        }
+      }
+    },
     "/api/gpu/v1/pools/groups": {
       "get": {
         "tags": [
           "GPU: Catalog"
         ],
         "summary": "Get pool groups",
-        "description": "Retrieve GPU pool groups, ordered by name.\n\nEach group bundles the pools of one GPU model and lists its currently available pools,\nwhether any of them is available and the lowest hourly price among its instance types.\nThe price is returned even when the group is out of stock.\n\nUse this endpoint to show which GPU models can be ordered and from what price.",
+        "description": "Retrieve GPU pool groups, ordered by name.\n\nEach group bundles the pools of one GPU model and lists its currently available pools,\nwhether any of them is available and the lowest hourly price, in credits, among its instance types.\nThe price is returned even when the group is out of stock.\n\nUse this endpoint to show which GPU models can be ordered and from what price.",
         "operationId": "GPU_getPoolGroupsV1",
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/gpu_currency_query"
-          }
-        ],
         "responses": {
           "200": {
             "description": "Success response",
@@ -5657,6 +5947,9 @@
           "401": {
             "$ref": "#/components/responses/Common.Response.UnauthorizedResponse"
           },
+          "404": {
+            "$ref": "#/components/responses/Common.Response.ErrorResponse"
+          },
           "500": {
             "$ref": "#/components/responses/Common.Response.ErrorResponse"
           }
@@ -5692,6 +5985,9 @@
           },
           "401": {
             "$ref": "#/components/responses/Common.Response.UnauthorizedResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/Common.Response.ErrorResponse"
           },
           "500": {
             "$ref": "#/components/responses/Common.Response.ErrorResponse"
@@ -9083,7 +9379,7 @@
           "Hosting: PocketBase"
         ],
         "summary": "Get PocketBase backend",
-        "description": "Returns the PocketBase backend of a website: its REST API and dashboard URLs, live state\nand version. A PocketBase backend gives the website a database, authentication, file\nstorage and a realtime REST API, served from the website's own domain under `/api` and\n`/_`. Returns 404 when the website has no PocketBase backend.\n\nThe superuser password is only shown once, when it is set, and is never returned here. If it\nis lost, set a new one with the `Set PocketBase superuser` endpoint.\n\nThe instance sleeps when idle and wakes on the first request, so `asleep` is a normal state\nand the first call to a sleeping instance can take a few seconds. `starting`, `running` and\n`stopping` are healthy; `failed` or `unregistered` mean the instance is broken; `missing`\nmeans its files are gone from the server, and creating the PocketBase backend again sets up\na new, empty one. `state` is null when the server could not be reached; retry later.\n\nPocketBase is rolling out gradually: an account without access yet gets 422.",
+        "description": "Returns the PocketBase backend of a website: its REST API and dashboard URLs, live state\nand version. A PocketBase backend gives the website a database, authentication, file\nstorage and a realtime REST API, served from the website's own domain under `/api` and\n`/_`. Returns 404 when the website has no PocketBase backend.\n\nThe superuser password is only shown once, when it is set, and is never returned here. If it\nis lost, set a new one with the `Set PocketBase superuser` endpoint.\n\nThe instance sleeps when idle and wakes on the first request, so `asleep` is a normal state\nand the first call to a sleeping instance can take a few seconds. `starting`, `running` and\n`stopping` are healthy.\n\n`failed` means the last start did not succeed. Hostinger starts it again on its own after\n`retry_after_seconds`, and the data is intact: wait and call again, do not delete the\nbackend. `failure_reason` says why: `process_limit` means the hosting account has no free\nprocess slots, usually because its Node.js apps are running.\n\n`unregistered` means the instance is broken. `missing` means its files are gone from the\nserver, and creating the PocketBase backend again sets up a new, empty one. `state` is null\nwhen the server could not be reached; retry later.\n\nPocketBase is rolling out gradually: an account without access yet gets 422.",
         "operationId": "hosting_getPocketBaseBackendV1",
         "parameters": [
           {
@@ -9224,7 +9520,7 @@
           "Hosting: PocketBase"
         ],
         "summary": "List account PocketBase backends",
-        "description": "Lists the PocketBase backends of all websites of a hosting account with their URLs, live\nstate, version and disk usage. A PocketBase backend gives a website a database,\nauthentication, file storage and a realtime REST API, served from the website's own\ndomain. An empty list means no website of the account has a PocketBase backend.\n\nStates: `asleep` is normal (the instance sleeps when idle and wakes on the first request);\n`starting`, `running` and `stopping` are healthy; `failed` or `unregistered` mean the\ninstance is broken; `missing` means its files are gone from the server, and creating the\nPocketBase backend again sets up a new, empty one. `state` is null when the server could\nnot be reached; retry later.\n\nPocketBase is rolling out gradually: an account without access yet gets 422.",
+        "description": "Lists the PocketBase backends of all websites of a hosting account with their URLs, live\nstate, version and disk usage. A PocketBase backend gives a website a database,\nauthentication, file storage and a realtime REST API, served from the website's own\ndomain. An empty list means no website of the account has a PocketBase backend.\n\nStates: `asleep` is normal (the instance sleeps when idle and wakes on the first request);\n`starting`, `running` and `stopping` are healthy.\n\n`failed` means the last start did not succeed. Hostinger starts it again on its own after\n`retry_after_seconds`, and the data is intact: wait and call again, do not delete the\nbackend. `failure_reason` says why: `process_limit` means the hosting account has no free\nprocess slots, usually because its Node.js apps are running.\n\n`unregistered` means the instance is broken. `missing` means its files are gone from the\nserver, and creating the PocketBase backend again sets up a new, empty one. `state` is null\nwhen the server could not be reached; retry later.\n\nPocketBase is rolling out gradually: an account without access yet gets 422.",
         "operationId": "hosting_listAccountPocketBaseBackendsV1",
         "parameters": [
           {
@@ -11887,6 +12183,53 @@
             "$ref": "#/components/responses/Common.Response.ErrorResponse"
           }
         }
+      },
+      "patch": {
+        "tags": [
+          "Reach: Campaigns"
+        ],
+        "summary": "Update campaign",
+        "description": "Update a campaign's content, sender, template and audience.\n\nOnly `draft`, `scheduled` and `failed` campaigns can be updated; a campaign that is sending or\nalready sent is rejected. Updating a `failed` campaign moves it back to `draft`. Audience changes\nreplace rather than merge: `all_contacts: true` targets every contact of the profile, while\n`segment_uuids` replaces the segments currently targeted. Leave both out to keep the audience as\nit is. This does not send the campaign - use the send endpoint for that.",
+        "operationId": "reach_updateCampaignV1",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/profileUuid"
+          },
+          {
+            "$ref": "#/components/parameters/campaignUuid"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Reach.V1.Campaigns.UpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Reach.V1.Campaigns.CreatedCampaignResource"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Common.Response.UnauthorizedResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/Common.Response.UnprocessableContentResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/Common.Response.ErrorResponse"
+          }
+        }
       }
     },
     "/api/reach/v1/profiles/{profileUuid}/campaigns": {
@@ -11982,6 +12325,42 @@
           },
           "422": {
             "$ref": "#/components/responses/Common.Response.UnprocessableContentResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/Common.Response.ErrorResponse"
+          }
+        }
+      }
+    },
+    "/api/reach/v1/profiles/{profileUuid}/campaigns/{campaignUuid}/send": {
+      "post": {
+        "tags": [
+          "Reach: Campaigns"
+        ],
+        "summary": "Send campaign",
+        "description": "Send a campaign now to the audience stored on it.\n\nThis is irreversible: once accepted, the emails go out and cannot be recalled. Confirm with the\ncustomer before calling. The campaign needs a subject, sender, template and audience first - set\nthem with the update endpoint. Delivery is asynchronous, so success means accepted, not delivered:\nthe campaign moves to `sending` and later to `publish`, or to `failed`. Read the campaign to follow\nit. The request is rejected when the campaign has no recipients, its sender domain is not verified\nor is blocked, the plan's sending limits would be exceeded, or the campaign is already being sent.",
+        "operationId": "reach_sendCampaignV1",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/profileUuid"
+          },
+          {
+            "$ref": "#/components/parameters/campaignUuid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success empty response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.SuccessEmptyResource"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Common.Response.UnauthorizedResponse"
           },
           "500": {
             "$ref": "#/components/responses/Common.Response.ErrorResponse"
@@ -21051,6 +21430,85 @@
         },
         "type": "object"
       },
+      "GPU.V1.ExposedService.StoreRequest": {
+        "required": [
+          "name",
+          "internal_port",
+          "protocol",
+          "type"
+        ],
+        "properties": {
+          "name": {
+            "description": "Service name, unique within the instance",
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 3,
+            "example": "Ollama"
+          },
+          "internal_port": {
+            "description": "Port the service listens on inside the instance, unique within the instance",
+            "type": "integer",
+            "maximum": 65535,
+            "minimum": 1,
+            "example": 8000
+          },
+          "protocol": {
+            "type": "string",
+            "enum": [
+              "tcp",
+              "udp"
+            ],
+            "example": "tcp"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "http",
+              "https"
+            ],
+            "example": "http"
+          }
+        },
+        "type": "object"
+      },
+      "GPU.V1.Instance.StoreRequest": {
+        "required": [
+          "pool_instance_id",
+          "os_template_id",
+          "name"
+        ],
+        "properties": {
+          "pool_instance_id": {
+            "description": "Instance type ID from the pool instance types list",
+            "type": "integer",
+            "example": 232
+          },
+          "os_template_id": {
+            "description": "OS template ID available for the selected instance type",
+            "type": "integer",
+            "example": 23
+          },
+          "name": {
+            "description": "Instance name, unique among your instances. Letters, numbers, dashes and underscores only",
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 3,
+            "pattern": "^[A-Za-z0-9_-]+$",
+            "example": "my-instance-1"
+          },
+          "public_keys": {
+            "description": "SSH public keys to add to the instance",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 2048,
+              "example": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAA user@laptop"
+            },
+            "maxItems": 10
+          }
+        },
+        "type": "object"
+      },
       "Horizons.V1.Websites.CreateWebsiteRequest": {
         "required": [
           "message"
@@ -22403,6 +22861,84 @@
             "description": "Template to send, as returned by the template endpoints. Can be left out and\nattached later, but the campaign cannot be sent without one.",
             "type": "string",
             "example": "550e8400-e29b-41d4-a716-446655440000"
+          },
+          "metadata": {
+            "description": "Extra campaign fields. Any key outside the listed ones is rejected.",
+            "properties": {
+              "preheader": {
+                "description": "Preview text shown after the subject line in the inbox.",
+                "type": "string",
+                "maxLength": 255,
+                "example": "Our biggest deals of the year"
+              },
+              "source": {
+                "description": "Where the campaign was created from.",
+                "type": "string",
+                "maxLength": 255,
+                "example": "api"
+              }
+            },
+            "type": "object",
+            "nullable": true
+          }
+        },
+        "type": "object"
+      },
+      "Reach.V1.Campaigns.UpdateRequest": {
+        "description": "Update a campaign. Send at least one field; fields left out keep their current value.",
+        "properties": {
+          "title": {
+            "description": "Name the campaign is listed under. Not shown to the recipients.",
+            "type": "string",
+            "maxLength": 255,
+            "example": "Black Friday Campaign"
+          },
+          "subject": {
+            "description": "Subject line of the email.",
+            "type": "string",
+            "maxLength": 255,
+            "example": "Don't miss our Black Friday deals!"
+          },
+          "sender_name": {
+            "description": "From name shown to the recipients.",
+            "type": "string",
+            "maxLength": 50,
+            "example": "Marketing Team"
+          },
+          "sender_email": {
+            "description": "From address of the campaign. Its domain has to be verified on the profile before\nthe campaign can be sent.",
+            "type": "string",
+            "example": "marketing@example.com"
+          },
+          "template_uuid": {
+            "description": "Template to send, as returned by the template endpoints.",
+            "type": "string",
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          },
+          "all_contacts": {
+            "description": "`true` targets every contact of the profile, `false` targets only `segment_uuids`.\nRequired when `segment_uuids` or `excluded_segment_uuids` is sent.",
+            "type": "boolean",
+            "example": false
+          },
+          "segment_uuids": {
+            "description": "Segments to target. Replaces the segments currently targeted.",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "example": [
+              "2080cc86-e026-4f7b-9598-d4132f8c7c2f"
+            ]
+          },
+          "excluded_segment_uuids": {
+            "description": "Segments to leave out. Only allowed together with `all_contacts: true`.",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "example": []
           },
           "metadata": {
             "description": "Extra campaign fields. Any key outside the listed ones is rejected.",
@@ -28976,6 +29512,298 @@
         },
         "type": "object"
       },
+      "GPU.V1.ExposedService.ExposedServiceCollection": {
+        "description": "Array of [`GPU.V1.ExposedService.ExposedServiceResource`](#model/gpuv1exposedserviceexposedserviceresource)",
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/GPU.V1.ExposedService.ExposedServiceResource"
+        }
+      },
+      "GPU.V1.ExposedService.ExposedServiceResource": {
+        "properties": {
+          "id": {
+            "description": "Exposed service ID",
+            "type": "integer",
+            "example": 5
+          },
+          "name": {
+            "type": "string",
+            "example": "Ollama"
+          },
+          "hostname": {
+            "description": "Public hostname or IP address of the service",
+            "type": "string",
+            "example": "1.2.3.4"
+          },
+          "internal_port": {
+            "description": "Port the service listens on inside the instance",
+            "type": "integer",
+            "example": 8088
+          },
+          "external_port": {
+            "description": "Public port the service is reachable on",
+            "type": "integer",
+            "example": 20000
+          },
+          "protocol": {
+            "type": "string",
+            "enum": [
+              "tcp",
+              "udp"
+            ],
+            "example": "tcp"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "http",
+              "https"
+            ],
+            "example": "http"
+          }
+        },
+        "type": "object"
+      },
+      "GPU.V1.Instance.InstanceListCollection": {
+        "description": "Array of [`GPU.V1.Instance.InstanceListResource`](#model/gpuv1instanceinstancelistresource)",
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/GPU.V1.Instance.InstanceListResource"
+        }
+      },
+      "GPU.V1.Instance.InstanceListResource": {
+        "properties": {
+          "id": {
+            "description": "GPU instance ID",
+            "type": "integer",
+            "example": 6325
+          },
+          "name": {
+            "type": "string",
+            "example": "my-instance-1"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "created",
+              "creating",
+              "running",
+              "stopped",
+              "destroying",
+              "destroyed",
+              "insufficient_funds",
+              "error",
+              "abuse"
+            ],
+            "example": "running"
+          },
+          "action_lock": {
+            "description": "Whether an action is in progress on the instance",
+            "type": "string",
+            "enum": [
+              "unlocked",
+              "locked"
+            ],
+            "example": "unlocked"
+          },
+          "action_lock_reason": {
+            "description": "Action in progress on the instance, `null` when unlocked",
+            "type": "string",
+            "enum": [
+              "creating",
+              "booting",
+              "installing_template",
+              "exposing_service",
+              "concealing_service",
+              "restarting",
+              "destroying",
+              "renaming"
+            ],
+            "example": "creating",
+            "nullable": true
+          },
+          "pool": {
+            "$ref": "#/components/schemas/GPU.V1.Pool.PoolResource"
+          },
+          "pool_instance": {
+            "$ref": "#/components/schemas/GPU.V1.Pool.PoolInstanceResource"
+          },
+          "os_template": {
+            "$ref": "#/components/schemas/GPU.V1.OsTemplate.OsTemplateResource"
+          }
+        },
+        "type": "object"
+      },
+      "GPU.V1.Instance.InstanceResource": {
+        "properties": {
+          "id": {
+            "description": "GPU instance ID",
+            "type": "integer",
+            "example": 6325
+          },
+          "name": {
+            "type": "string",
+            "example": "my-instance-1"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "created",
+              "creating",
+              "running",
+              "stopped",
+              "destroying",
+              "destroyed",
+              "insufficient_funds",
+              "error",
+              "abuse"
+            ],
+            "example": "running"
+          },
+          "action_lock": {
+            "description": "Whether an action is in progress on the instance",
+            "type": "string",
+            "enum": [
+              "unlocked",
+              "locked"
+            ],
+            "example": "unlocked"
+          },
+          "action_lock_reason": {
+            "description": "Action in progress on the instance, `null` when unlocked",
+            "type": "string",
+            "enum": [
+              "creating",
+              "booting",
+              "installing_template",
+              "exposing_service",
+              "concealing_service",
+              "restarting",
+              "destroying",
+              "renaming"
+            ],
+            "example": "creating",
+            "nullable": true
+          },
+          "pool": {
+            "$ref": "#/components/schemas/GPU.V1.Pool.PoolResource"
+          },
+          "pool_instance": {
+            "$ref": "#/components/schemas/GPU.V1.Pool.PoolInstanceResource"
+          },
+          "os_template": {
+            "$ref": "#/components/schemas/GPU.V1.OsTemplate.OsTemplateResource"
+          },
+          "llm_model_variant": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/GPU.V1.LlmModelVariant.LlmModelVariantResource"
+              }
+            ],
+            "nullable": true,
+            "description": "LLM model variant installed on the instance, `null` for plain OS templates"
+          },
+          "ssh_keys": {
+            "$ref": "#/components/schemas/GPU.V1.SshKey.SshKeyCollection"
+          }
+        },
+        "type": "object"
+      },
+      "GPU.V1.LlmModelVariant.LlmModelVariantResource": {
+        "properties": {
+          "id": {
+            "description": "LLM model variant ID",
+            "type": "integer",
+            "example": 42
+          },
+          "model_tag": {
+            "type": "string",
+            "example": "llama4:7b"
+          },
+          "parameter_count": {
+            "type": "integer",
+            "example": 7000000000
+          },
+          "capabilities": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "tools",
+                "thinking",
+                "vision",
+                "sound",
+                "embedding",
+                "decision"
+              ]
+            },
+            "example": [
+              "tools",
+              "thinking"
+            ]
+          },
+          "dark_image_id": {
+            "description": "Dark theme icon image ID",
+            "type": "string",
+            "example": "hgpu-llm-icon-llama-dark",
+            "nullable": true
+          },
+          "light_image_id": {
+            "description": "Light theme icon image ID",
+            "type": "string",
+            "example": "hgpu-llm-icon-llama-light",
+            "nullable": true
+          }
+        },
+        "type": "object"
+      },
+      "GPU.V1.Metrics.MetricsCollection": {
+        "description": "Array of [`GPU.V1.Metrics.MetricsResource`](#model/gpuv1metricsmetricsresource)",
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/GPU.V1.Metrics.MetricsResource"
+        }
+      },
+      "GPU.V1.Metrics.MetricsResource": {
+        "properties": {
+          "timestamp": {
+            "description": "Unix timestamp of the measurement",
+            "type": "integer",
+            "example": 1718000000
+          },
+          "cpu_percentage": {
+            "description": "CPU utilisation in percent",
+            "type": "number",
+            "format": "float",
+            "example": 42.5
+          },
+          "memory_used": {
+            "description": "Used memory in bytes",
+            "type": "number",
+            "format": "float",
+            "example": 8589934592
+          },
+          "gpu_percentage": {
+            "description": "GPU utilisation in percent",
+            "type": "number",
+            "format": "float",
+            "example": 87.3
+          },
+          "gpu_memory_used": {
+            "description": "Used GPU memory in bytes",
+            "type": "number",
+            "format": "float",
+            "example": 42949672960
+          },
+          "gpu_tflops": {
+            "description": "GPU throughput in TFLOPS",
+            "type": "number",
+            "format": "float",
+            "example": 312
+          }
+        },
+        "type": "object"
+      },
       "GPU.V1.OsTemplate.OsTemplateCollection": {
         "description": "Array of [`GPU.V1.OsTemplate.OsTemplateResource`](#model/gpuv1ostemplateostemplateresource)",
         "type": "array",
@@ -28998,12 +29826,6 @@
             "description": "Knowledge base article about the template",
             "type": "string",
             "example": "https://support.hostinger.com/os-templates/ubuntu-cuda"
-          },
-          "image": {
-            "description": "Icon image ID",
-            "type": "string",
-            "example": "hgpu-app-icon-ubuntu",
-            "nullable": true
           },
           "dark_image_id": {
             "description": "Dark theme icon image ID",
@@ -29045,6 +29867,16 @@
             "type": "string",
             "example": "NVIDIA H100"
           },
+          "description": {
+            "type": "string",
+            "example": "Built for high-performance AI training",
+            "nullable": true
+          },
+          "feature": {
+            "type": "string",
+            "example": "NVLink support",
+            "nullable": true
+          },
           "vram": {
             "description": "Total VRAM in bytes",
             "type": "integer",
@@ -29057,10 +29889,9 @@
             "example": true
           },
           "min_price_per_hour": {
-            "description": "Lowest hourly price of the group instance types, in the requested currency",
-            "type": "number",
-            "format": "float",
-            "example": 0.65,
+            "description": "Lowest hourly price of the group instance types, in credits",
+            "type": "integer",
+            "example": 65,
             "nullable": true
           },
           "pools": {
@@ -29108,7 +29939,7 @@
             "example": 549755813888
           },
           "price_per_hour": {
-            "description": "Hourly price in cents (USD)",
+            "description": "Hourly price in credits",
             "type": "integer",
             "example": 35
           }
@@ -29174,6 +30005,32 @@
             "description": "ISO 3166-1 alpha-2 country code",
             "type": "string",
             "example": "LT"
+          }
+        },
+        "type": "object"
+      },
+      "GPU.V1.SshKey.SshKeyCollection": {
+        "description": "Array of [`GPU.V1.SshKey.SshKeyResource`](#model/gpuv1sshkeysshkeyresource)",
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/GPU.V1.SshKey.SshKeyResource"
+        }
+      },
+      "GPU.V1.SshKey.SshKeyResource": {
+        "properties": {
+          "id": {
+            "description": "SSH key ID",
+            "type": "integer",
+            "example": 12
+          },
+          "name": {
+            "type": "string",
+            "example": "user@laptop",
+            "nullable": true
+          },
+          "public_key": {
+            "type": "string",
+            "example": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAA user@laptop"
           }
         },
         "type": "object"
@@ -31188,6 +32045,8 @@
           "api_url",
           "admin_url",
           "state",
+          "failure_reason",
+          "retry_after_seconds",
           "version",
           "next_steps"
         ],
@@ -31228,6 +32087,22 @@
             "example": "asleep",
             "nullable": true
           },
+          "failure_reason": {
+            "description": "Why the last start did not succeed, set only while `state` is `failed`. `process_limit` means the\nhosting account has no free process slots, usually because its Node.js apps are running;\n`start_failed` is any other cause.",
+            "type": "string",
+            "enum": [
+              "process_limit",
+              "start_failed"
+            ],
+            "example": "process_limit",
+            "nullable": true
+          },
+          "retry_after_seconds": {
+            "description": "Seconds until Hostinger tries to start the instance again, set only while `state` is `failed`.\nNull when the next try is due now.",
+            "type": "integer",
+            "example": 300,
+            "nullable": true
+          },
           "version": {
             "description": "PocketBase version",
             "type": "string",
@@ -31259,6 +32134,8 @@
           "api_url",
           "admin_url",
           "state",
+          "failure_reason",
+          "retry_after_seconds",
           "version",
           "disk_usage_kb"
         ],
@@ -31297,6 +32174,22 @@
               "missing"
             ],
             "example": "asleep",
+            "nullable": true
+          },
+          "failure_reason": {
+            "description": "Why the last start did not succeed, set only while `state` is `failed`. `process_limit` means the\nhosting account has no free process slots, usually because its Node.js apps are running;\n`start_failed` is any other cause.",
+            "type": "string",
+            "enum": [
+              "process_limit",
+              "start_failed"
+            ],
+            "example": "process_limit",
+            "nullable": true
+          },
+          "retry_after_seconds": {
+            "description": "Seconds until Hostinger tries to start the instance again, set only while `state` is `failed`.\nNull when the next try is due now.",
+            "type": "integer",
+            "example": 300,
             "nullable": true
           },
           "version": {
@@ -33274,7 +34167,7 @@
             "nullable": true
           },
           "status": {
-            "description": "Always `draft` for a campaign that was just created.",
+            "description": "Always `draft` for a campaign that was just created; the current status after an update.",
             "type": "string",
             "enum": [
               "draft",
@@ -37248,64 +38141,24 @@
           "example": 564651
         }
       },
-      "gpu_currency_query": {
-        "name": "currency",
-        "in": "query",
-        "description": "Currency of the returned prices, `USD` by default",
+      "exposedServiceId": {
+        "name": "exposedServiceId",
+        "in": "path",
+        "description": "Exposed service ID",
+        "required": true,
         "schema": {
-          "type": "string",
-          "enum": [
-            "USD",
-            "ARS",
-            "AMD",
-            "AUD",
-            "AZN",
-            "BDT",
-            "BRL",
-            "BTC",
-            "BYN",
-            "CAD",
-            "CHF",
-            "CLP",
-            "CNY",
-            "COP",
-            "CZK",
-            "DKK",
-            "EGP",
-            "EUR",
-            "GBP",
-            "GEL",
-            "HKD",
-            "HRK",
-            "HUF",
-            "IDR",
-            "ILS",
-            "INR",
-            "JPY",
-            "KGS",
-            "KRW",
-            "KZT",
-            "MAD",
-            "MXN",
-            "MYR",
-            "NGN",
-            "NOK",
-            "NZD",
-            "PEN",
-            "PHP",
-            "PKR",
-            "PLN",
-            "SEK",
-            "SGD",
-            "THB",
-            "TJS",
-            "TRY",
-            "TWD",
-            "UAH",
-            "VND",
-            "ZAR"
-          ],
-          "example": "EUR"
+          "type": "integer",
+          "example": 3621
+        }
+      },
+      "instanceId": {
+        "name": "instanceId",
+        "in": "path",
+        "description": "GPU instance ID",
+        "required": true,
+        "schema": {
+          "type": "integer",
+          "example": 6325
         }
       },
       "poolId": {
@@ -38973,6 +39826,18 @@
       "x-parent": "GPU"
     },
     {
+      "name": "GPU: Instances",
+      "description": "Create, view, monitor and delete GPU instances. An instance runs\nthe chosen OS template on a GPU pool instance type and is billed\nhourly. Creating and deleting run asynchronously; poll the\ninstance to follow its `status`.",
+      "x-displayName": "Instances",
+      "x-parent": "GPU"
+    },
+    {
+      "name": "GPU: Exposed services",
+      "description": "Make services running on a GPU instance, such as an inference\nserver or a notebook, reachable from the internet. Each exposed\nservice maps a port inside the instance to a public hostname\nand port. An instance can have up to 4 exposed services.",
+      "x-displayName": "Exposed services",
+      "x-parent": "GPU"
+    },
+    {
       "name": "Ecommerce"
     },
     {
@@ -39183,7 +40048,9 @@
     {
       "name": "GPU",
       "tags": [
-        "GPU: Catalog"
+        "GPU: Catalog",
+        "GPU: Instances",
+        "GPU: Exposed services"
       ]
     },
     {
