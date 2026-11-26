@@ -8,7 +8,7 @@
       "url": "https://developers.hostinger.com",
       "email": "devs@hostinger.com"
     },
-    "version": "3.9.0",
+    "version": "3.9.2",
     "x-scalar-sdk-installation": [
       {
         "lang": "Shell",
@@ -2911,6 +2911,9 @@
           "401": {
             "$ref": "#/components/responses/Common.Response.UnauthorizedResponse"
           },
+          "422": {
+            "$ref": "#/components/responses/Common.Response.UnprocessableContentResponse"
+          },
           "500": {
             "$ref": "#/components/responses/Common.Response.ErrorResponse"
           }
@@ -2982,7 +2985,7 @@
           "Domains: Move"
         ],
         "summary": "Start outgoing domain move",
-        "description": "Initiate a move of a specified domain to another Hostinger account.\n\nThe receiving account has to already exist and accept the move before the domain changes hands.\n\nThe domain must be active. The subscription it belongs to is resolved automatically,\nand the request is rejected with a 404 status code when the domain has no domain\nsubscription of its own.\n\nThe move is also refused unless the domain:\n- was registered at least 4 days ago\n- does not expire within the next 10 days\n- has an extension that supports moves\n- has no move already in progress\n- was not moved in the last 10 days\n- is not a premium domain\n- is not still processing a recent renewal\n\nA move refused for one of these rules is rejected with a 404 status code and error code 2048,\nwith a message naming the rule. The receiving account is checked first, and when it cannot\nbe used the message stays generic.\n\nDomains protected by premium protection require an additional verification step,\nsuch requests are rejected with a 428 status code.\n\nUse this endpoint to hand a domain over to another Hostinger user.",
+        "description": "Initiate a move of a specified domain to another Hostinger account.\n\nThe receiving account has to already exist and accept the move before the domain changes hands.\n\nThe domain must be active. The subscription it belongs to is resolved automatically,\nand the request is rejected with a 404 status code when the domain has no domain\nsubscription of its own.\n\nThe move is also refused unless the domain:\n- was registered at least 4 days ago\n- does not expire within the next 10 days\n- has an extension that supports moves\n- has no move already in progress\n- was not moved in the last 10 days\n- is not a premium domain\n- is not still processing a recent renewal\n\nA move refused for one of these rules is rejected with a 422 status code and error code 2048,\nwith a message naming the rule. The receiving account is checked first, and when it cannot\nbe used the message stays generic.\n\nDomains protected by premium protection require an additional verification step,\nsuch requests are rejected with a 428 status code.\n\nUse this endpoint to hand a domain over to another Hostinger user.",
         "operationId": "domains_startOutgoingDomainMoveV1",
         "parameters": [
           {
@@ -3046,6 +3049,9 @@
           },
           "401": {
             "$ref": "#/components/responses/Common.Response.UnauthorizedResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/Common.Response.UnprocessableContentResponse"
           },
           "500": {
             "$ref": "#/components/responses/Common.Response.ErrorResponse"
@@ -38614,7 +38620,7 @@
       "dns_record_type_path": {
         "name": "type",
         "in": "path",
-        "description": "DNS record type to check. One of: A, AAAA, CNAME, MX, SRV, TXT, CAA",
+        "description": "DNS record type to check, uppercase. One of: A, AAAA, CAA, CNAME, DNAME, DNSKEY, HTTPS, LOC, MX, NS, PTR, SOA, SRV, SSHFP, SVCB, TLSA, TXT, URI. PTR takes the reverse name, e.g. 10.2.0.192.in-addr.arpa, not the IP address. SOA exists only at a zone's apex. DS and ALIAS cannot be checked.",
         "required": true,
         "schema": {
           "type": "string",
